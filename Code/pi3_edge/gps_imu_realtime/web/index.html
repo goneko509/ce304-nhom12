@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telemetry HUD - AI Driving Monitor</title>
+
+    <!-- Các thư viện cần thiết -->
+    <!-- <link rel="stylesheet" href="assets/leaflet.css" />
+    <script src="assets/leaflet.js"></script>
+    <script src="assets/three.min.js"></script>
+    <script src="assets/OrbitControls.js"></script></script>
+    -->
+
+    <!-- Chart.js (Biểu đồ) -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
+    <script src="assets/chart.js"></script>
+
+    <!-- Leaflet CSS & JS (Bản đồ) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Three.js & OrbitControls (Mô phỏng 3D) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- THÊM 2 DÒNG NÀY ĐỂ ĐỌC ĐƯỢC FILE MÔ HÌNH XE 3D (.gltf, .obj) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+
+    <!-- LIÊN KẾT FILE CSS GIAO DIỆN -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- CONTAINER THÔNG BÁO -->
+    <div id="toast-container"></div>
+
+    <!-- ================= DATA SOURCE COMMAND ================= -->
+    <div class="panel control-panel-top" id="main-control-panel">
+        <div class="control-label">
+            <div class="pulse-dot" id="live-dot"></div>
+            DATA SOURCE COMMAND
+        </div>
+        <div class="mode-options-top">
+            <label><input type="radio" name="mode" value="realtime" checked onchange="toggleMode()"> <span>LIVE TELEMETRY</span></label>
+            <label><input type="radio" name="mode" value="replay" onchange="toggleMode()"> <span>DATA REPLAY</span></label>
+        </div>
+
+        <div id="replay-panel" style="display: none;">
+            <span style="color: #8892b0; font-size: 11px; text-transform: uppercase; white-space: nowrap;">Lịch sử phiên chạy:</span>
+            <select id="session-select" onchange="handleSessionChange()">
+                <option>Đang tải...</option>
+            </select>
+            <div class="replay-buttons-top">
+                <button id="btn-play-pause" onclick="togglePlayPause()">▶ INIT PLAY</button>
+                <button class="btn-restart" onclick="restartReplay()">⏮ REWIND</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= DÒNG 1: BẢN ĐỒ VÀ MÔ PHỎNG 3D ================= -->
+    <div class="dashboard-grid">
+        <!-- Cột Trái: Bản đồ & GPS Stats -->
+        <div class="panel">
+            <h3 class="panel-title">
+                <div class="title-left">📍 TRACKING GPS & TRAJECTORY</div>
+            </h3>
+
+            <div id="map-wrapper">
+                <div id="map"></div>
+                <button id="btn-center-map" onclick="centerMapOnCar()">🎯 TRACKING TÂM XE</button>
+            </div>
+
+            <div class="telemetry-combo">
+                <div class="odometer-wrap">
+                    <svg viewBox="0 0 200 118" class="odometer-svg">
+                        <path d="M14,110 A90,90 0 0 1 61,31" stroke="#27AE60" stroke-width="16" fill="none" stroke-linecap="round"/>
+                        <path d="M61,31 A90,90 0 0 1 139,31" stroke="#F1C40F" stroke-width="16" fill="none" stroke-linecap="round"/>
+                        <path d="M139,31 A90,90 0 0 1 186,110" stroke="#C0392B" stroke-width="16" fill="none" stroke-linecap="round"/>
+                        <line id="odo-needle" x1="100" y1="110" x2="100" y2="33" stroke="#ecf0f1" stroke-width="3" stroke-linecap="round" style="transform-origin:100px 110px; transform:rotate(-120deg);"/>
+                        <circle cx="100" cy="110" r="6" fill="#ecf0f1"/>
+                    </svg>
+                    <div class="odometer-digital"><span id="val-speed">0</span><span class="odometer-unit">km/h</span></div>
+                </div>
+
+                <div class="telemetry-rows">
+                    <div class="telemetry-row">
+                        <span class="telemetry-label">Vệ tinh</span>
+                        <span class="telemetry-value" id="val-sat">0</span>
+                    </div>
+                    <div class="telemetry-row">
+                        <span class="telemetry-label">Độ cao (m)</span>
+                        <span class="telemetry-value" id="val-alt">0</span>
+                    </div>
+                    <div class="telemetry-row">
+                        <span class="telemetry-label">HDOP</span>
+                        <span class="telemetry-value" id="val-hdop">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ai-flag-row" id="ai-flag-row">
+                <span class="ai-flag-label">🧠 Nhãn AI</span>
+                <span class="ai-flag-pills" id="ai-flag-pills"><span class="ai-pill ai-pill-offline">⚪ OFFLINE</span></span>
+            </div>
+
+            <div id="live-swimlane-wrap" class="live-swimlane-wrap">
+                <div class="live-swimlane-header">
+                    <span>Timeline Sự Kiện AI (Live, 30s gần nhất)</span>
+                    <span id="live-swimlane-clock">0.0s</span>
+                </div>
+                <div id="live-swimlane-scroll" class="live-swimlane-scroll">
+                    <div id="live-swimlane-labels" class="live-swimlane-labels"></div>
+                    <div id="live-swimlane-track" class="live-swimlane-track"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột Phải: Mô phỏng 3D & IMU Stats -->
+        <div class="panel">
+            <h3 class="panel-title">
+                <div class="title-left">🚗 KINEMATIC 3D ORIENTATION</div>
+            </h3>
+
+            <div class="toolbar-home">
+                <input type="number" id="ref-alt" placeholder="Độ cao Home (m)">
+                <button onclick="setHomeReference()"
+                    style="background: #333; color: #fff;">📍 HOME</button>
+                <button id="btn-toggle-trail" onclick="toggle3DTrail()"
+                    style="background: #0055ff; color: #fff;">👁 ẨN QUỸ ĐẠO</button>
+                <button class="btn-mini" onclick="set3DView('rear')" title="Nhìn từ phía sau xe">🎥 SAU</button>
+                <button class="btn-mini" onclick="set3DView('top')" title="Nhìn từ trên xuống">🎥 TRÊN</button>
+                <button class="btn-mini" onclick="set3DView('side')" title="Nhìn từ bên hông xe">🎥 CẠNH</button>
+                <button class="btn-mini" onclick="set3DView('fit')" title="Lùi xa để thấy toàn cảnh">🗺 TOÀN CẢNH</button>
+                <button class="btn-mini" id="btn-toggle-3d-tracking" onclick="toggle3DTracking()" title="Bật/tắt camera tự bám theo xe">🎯 THEO XE: BẬT</button>
+            </div>
+
+            <div class="orientation-row">
+                <div id="canvas3d"></div>
+                <div class="pedal-bars">
+                    <div class="pedal-bar-wrap">
+                        <div class="pedal-bar-track"><div class="pedal-bar-fill pedal-brake" id="bar-brake"></div></div>
+                        <span class="pedal-bar-label">PHANH</span>
+                    </div>
+                    <div class="pedal-bar-wrap">
+                        <div class="pedal-bar-track"><div class="pedal-bar-fill pedal-throttle" id="bar-throttle"></div></div>
+                        <span class="pedal-bar-label">GA</span>
+                    </div>                    
+                </div>
+            </div>
+
+            <div class="orientation-compact-row">
+                <div class="orientation-compact-item"><span class="label">YAW</span><span class="value" id="val-yaw">0°</span></div>
+                <div class="orientation-compact-item"><span class="label">ROLL</span><span class="value" id="val-roll">0°</span></div>
+                <div class="orientation-compact-item"><span class="label">PITCH</span><span class="value" id="val-pitch">0°</span></div>
+            </div>
+
+            <div class="mini-chart-grid">
+                <div class="mini-chart-box">
+                    <div class="mini-chart-title">
+                        <span>📈 ACCELERATION (m/s²)</span>
+                        <button class="btn-reset-chart" onclick="resetChartVisibility(accChart)">🔄</button>
+                    </div>
+                    <div class="chart-container"><canvas id="accChart"></canvas></div>
+                </div>
+                <div class="mini-chart-box">
+                    <div class="mini-chart-title">
+                        <span>🔄 GYROSCOPE (deg/s)</span>
+                        <button class="btn-reset-chart" onclick="resetChartVisibility(gyrChart)">🔄</button>
+                    </div>
+                    <div class="chart-container"><canvas id="gyrChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= STICKY BOTTOM: TIMELINE SCRUBBER ================= -->
+    <!-- <div id="timeline-container" style="display: none;">
+        <span id="time-display">00:00 / 00:00</span>
+        <input type="range" id="timeline-slider" min="0" max="100" value="0" oninput="scrubTimeline()" onmousedown="pauseForScrub()" onmouseup="resumeAfterScrub()">
+    </div> -->
+
+    <!-- Mới: Thêm button điều khiển ngay trong container này -->
+    <div id="timeline-container" style="display: none;">
+        <!-- Nút Play/Pause mới cho timeline -->
+        <button id="btn-timeline-play" onclick="togglePlayPause()"
+            style="background: var(--neon-green); color: #000; width: 40px; height: 30px; padding: 0;">▶</button>
+
+        <span id="time-display">00:00 / 00:00</span>
+        <input type="range" id="timeline-slider" min="0" max="100" value="0" oninput="scrubTimeline()"
+            onmousedown="pauseForScrub()" onmouseup="resumeAfterScrub()">
+    </div>
+
+    <!-- LIÊN KẾT FILE JAVASCRIPT LOGIC -->
+    <script src="main.js"></script>
+
+</body>
+
+</html>

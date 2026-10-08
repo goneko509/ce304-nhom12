@@ -1,0 +1,12 @@
+# Raspberry Pi 3 (Raspberry Pi OS 64-bit, Python 3.13) - thu thap du lieu + suy luan thoi gian thuc
+# Phien ban da kiem chung tren thiet bi: ai-edge-litert 2.2.0, adafruit-circuitpython-bno055 5.4.20, psutil 5.9.8
+adafruit-blinka
+adafruit-circuitpython-bno055
+pyserial
+numpy
+scipy
+psutil
+flask
+gpiozero
+evdev            # tay cam PS5 (DualSense) qua Bluetooth
+ai-edge-litert   # trinh thong dich TFLite/LiteRT (thay cho tflite-runtime da ngung phat hanh wheel)

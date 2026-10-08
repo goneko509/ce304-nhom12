@@ -1,0 +1,43 @@
+<div class="hud-bar">
+    <div class="hud-top">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <span class="hud-title" id="mobile_title" style="display: none;">{{ ui.HEADER }}</span>
+            <a href="/" class="btn-admin" style="color: var(--neon-cyan);">[ HUD ]</a>
+            <a href="http://{{ request.host.split(':')[0] }}:4567/analytics.html" target="_blank" class="btn-admin" style="color: var(--neon-green);" onclick="this.href='http://' + window.location.hostname + ':4567/analytics.html';">[ PHÂN TÍCH ]</a>
+            <a href="/admin" class="btn-admin">[ ADMIN ]</a>
+            <a href="http://{{ request.host.split(':')[0] }}:4567/" target="_blank" class="btn-admin" style="color: var(--neon-yellow);" onclick="this.href='http://' + window.location.hostname + ':4567/';">[ 3D HUD ]</a>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 6px; background: rgba(0, 255, 255, 0.1); border: 1px solid var(--neon-cyan); padding: 4px 10px; border-radius: 4px;">
+                <span style="font-size: 14px; color: var(--neon-cyan); font-weight: bold;">📦 MODEL:</span>
+                <select id="object_selector" onchange="handleObjectChange(this.value)" style="background: transparent; color: #fff; border: none; font-size: 14px; font-weight: bold; cursor: pointer; outline: none;">
+                    {% if available_objects %}
+                        {% for obj in available_objects %}
+                        <option value="{{ obj }}" {% if obj == active_object %}selected{% endif %} style="background: #111; color: #fff;">{{ obj | replace('_event_db.csv', '') | replace('.csv', '') | upper }} ({{ obj }})</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="event_db.csv">DEFAULT</option>
+                    {% endif %}
+                </select>
+            </div>
+            <button class="btn-gpio off" onclick="resetBlocksOrder()" title="Khôi phục thứ tự các khối về mặc định" style="font-size: 13px;">SẮP XẾP MẶC ĐỊNH</button>
+            <div id="ps5_status_badge" onclick="reconnectPS5()" title="Nhấn để thử kết nối lại tay cầm" style="display: flex; align-items: center; justify-content: center; background: rgba(255, 0, 0, 0.1); border: 1px solid #ff3b30; color: #ff3b30; border-radius: 4px; padding: 4px 10px; font-weight: bold; font-size: 13px; user-select: none; cursor: pointer;">🎮 PS5: OFFLINE</div>
+            <button id="btn_gpio12" class="btn-gpio off" onclick="toggleGPIO12()">PIN 12: OFF</button>
+            <button class="btn-cancel" onclick="action('cancel', null)">{{ ui.BTN_CANCEL }}</button>                    
+        </div>
+    </div>
+    <div class="hud-grid">
+        <div class="hud-cell">
+            <span class="hud-label">Raw Data</span>
+            <span class="hud-value" id="raw_status" style="color: gray;">{{ ui.LBL_REC_IDLE }}</span>
+        </div>
+        <div class="hud-cell">
+            <span class="hud-label">Session</span>
+            <span class="hud-value"><span id="session_time">0.0</span><span class="unit">s</span></span>
+        </div>
+        <div class="hud-cell">
+            <span class="hud-label">GPIO 12 Input</span>
+            <span class="hud-value" id="gpio_status" style="color: gray;">{{ ui.LBL_BTN_RELEASED }}</span>
+        </div>
+    </div>
+</div>

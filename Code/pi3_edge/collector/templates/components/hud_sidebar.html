@@ -1,0 +1,104 @@
+<aside class="right-sidebar">
+    <div class="sidebar-tab" id="sidebar_tab" onclick="toggleMainSidebar()">▶</div>
+    <div class="sidebar-header">
+        <span class="hud-title">{{ ui.HEADER }}</span>
+    </div>
+    <div class="sidebar-content">
+        <span class="hud-label" style="color: var(--red);">🔴 ACTIVE EVENTS</span>
+        <div id="active_events_list" style="margin-bottom: 20px; min-height: 24px;">None</div>
+
+        <!-- VÙNG CẤU HÌNH KỊCH BẢN TEST AI (RULES ENGINE) -->
+        <div class="rule-engine-panel" style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px;">
+            <div class="rule-header" onclick="toggleRulePanel()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: rgba(0,255,255,0.08); padding: 8px 10px; border: 1px solid var(--neon-cyan); border-radius: 4px; margin-bottom: 10px;">
+                <span class="hud-label" style="color: var(--neon-cyan); margin: 0; font-size: 11px;">🤖 CẤU HÌNH RULES (TEST AI)</span>
+                <span id="rule_panel_icon" style="color: var(--neon-cyan); font-weight: bold; font-size: 11px;">►</span>
+            </div>
+
+            <div id="rule_panel_body" style="display: none; flex-direction: column; gap: 10px;">
+                <!-- CÔNG TẮC BẬT/TẮT TỰ ĐỘNG THEO GPIO12 -->
+                <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 4px; border: 1px dashed rgba(255,255,255,0.15);">
+                    <label for="rule_auto_toggle" style="font-size: 13px; font-weight: 600; color: var(--neon-yellow); cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <input type="checkbox" id="rule_auto_toggle" style="cursor: pointer; width: 14px; height: 14px; accent-color: var(--neon-yellow);">
+                        ⚡ Tự chạy đếm ngược khi REC (GPIO12)
+                    </label>
+                </div>
+
+                <!-- FORM THÊM SỰ KIỆN VÀO KỊCH BẢN -->
+                <div style="background: rgba(10, 15, 25, 0.6); padding: 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">
+                    <span class="hud-label" style="font-size: 12px; color: var(--text-dim);">Chọn sự kiện test để thêm vào playlist:</span>
+                    <select id="rule_event_select" style="width: 100%; margin-bottom: 6px; padding: 6px; background: #0c0f16; color: #fff; border: 1px solid var(--border); border-radius: 3px; font-size: 14px;">
+                        {% for group in dynamic_groups %}
+                            <optgroup label="{{ group | replace('_', ' ') }}">
+                            {% for ev_key in dynamic_groups_map[group] %}
+                                <option value="{{ ev_key }}" data-label="{{ events[ev_key] }}">{{ events[ev_key] }} [{{ ev_key }}]</option>
+                            {% endfor %}
+                            </optgroup>
+                        {% endfor %}
+                    </select>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-bottom: 8px;">
+                        <div>
+                            <span class="hud-label" style="font-size: 11px;">⏳ Chuẩn bị (s):</span>
+                            <input type="number" id="rule_prep_time" value="3" min="0.1" step="0.1" max="60" style="width: 100%; padding: 4px; background: #0c0f16; color: var(--neon-yellow); border: 1px solid var(--border); text-align: center; font-weight: bold; font-size: 13px;">
+                        </div>
+                        <div>
+                            <span class="hud-label" style="font-size: 11px;">🔴 Thu thập (s):</span>
+                            <input type="number" id="rule_duration" value="5" min="0.1" step="0.1" max="300" style="width: 100%; padding: 4px; background: #0c0f16; color: var(--neon-green); border: 1px solid var(--border); text-align: center; font-weight: bold; font-size: 13px;">
+                        </div>
+                        <div>
+                            <span class="hud-label" style="font-size: 9px;">🔁 Số lần thêm:</span>
+                            <input type="number" id="rule_add_multiplier" value="1" min="1" max="50" style="width: 100%; padding: 4px; background: #0c0f16; color: var(--neon-cyan); border: 1px solid var(--border); text-align: center; font-weight: bold; font-size: 11px;">
+                        </div>
+                    </div>
+
+                    <button onclick="addRuleStep()" style="width: 100%; padding: 6px; background: rgba(0,255,255,0.15); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); font-weight: 700; font-size: 11px; cursor: pointer; border-radius: 3px; transition: 0.2s;">
+                        + THÊM VÀO KỊCH BẢN
+                    </button>
+                </div>
+
+                <!-- DANH SÁCH KỊCH BẢN & CÔNG CỤ NHÂN BẢN NHÓM -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
+                    <span class="hud-label" style="margin: 0; font-size: 10px;">Trình tự test (<span id="rule_step_count">0</span>):</span>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <label style="color: var(--neon-cyan); font-size: 10px; cursor: pointer; display: flex; align-items: center; gap: 3px; font-weight: 600;">
+                            <input type="checkbox" id="chk_rule_select_all" onchange="toggleSelectAllRules(this.checked)" style="accent-color: var(--neon-cyan); cursor: pointer; width: 13px; height: 13px;">
+                            Chọn tất cả
+                        </label>
+                        <button onclick="clearRulePlaylist()" title="Xóa toàn bộ playlist" style="background: none; border: none; color: #ff3b30; font-size: 10px; cursor: pointer; font-weight: 600;">[XÓA HẾT]</button>
+                    </div>
+                </div>
+
+                <!-- BẢNG CÔNG CỤ NHÂN BẢN & XÓA NHÓM ĐÃ CHỌN -->
+                <div id="rule_batch_toolbar" style="background: rgba(0, 255, 255, 0.05); border: 1px solid rgba(0, 255, 255, 0.25); border-radius: 4px; padding: 5px 6px; display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <span class="hud-label" style="font-size: 9px; margin: 0; color: var(--neon-yellow);">📑 Nhân bản nhóm x</span>
+                        <input type="number" id="rule_clone_multiplier" value="1" min="1" max="50" style="width: 38px; padding: 2px; background: #0c0f16; color: var(--neon-yellow); border: 1px solid var(--neon-yellow); text-align: center; font-weight: bold; font-size: 11px; border-radius: 3px;" title="Số lần lặp thêm cho các sự kiện đang tick chọn">
+                        <span class="hud-label" style="font-size: 9px; margin: 0; color: var(--neon-yellow);">lần</span>
+                    </div>
+                    <div style="display: flex; gap: 4px;">
+                        <button onclick="cloneSelectedRules()" style="padding: 3px 7px; background: rgba(243, 156, 18, 0.25); border: 1px solid var(--neon-yellow); color: var(--neon-yellow); font-weight: 700; font-size: 10px; cursor: pointer; border-radius: 3px;">
+                            📋 NHÂN BẢN
+                        </button>
+                        <button onclick="deleteSelectedRules()" style="padding: 3px 6px; background: rgba(255, 59, 48, 0.2); border: 1px solid #ff3b30; color: #ff3b30; font-weight: 700; font-size: 10px; cursor: pointer; border-radius: 3px;" title="Xóa các sự kiện được tick chọn">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+
+                <div id="rule_playlist_box" style="max-height: 220px; overflow-y: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 4px; padding: 4px; display: flex; flex-direction: column; gap: 4px;">
+                    <div style="color: var(--text-dim); font-size: 11px; text-align: center; padding: 12px 4px;">Chưa có sự kiện nào. Hãy thêm ở trên!</div>
+                </div>
+
+                <!-- NÚT ĐIỀU KHIỂN THỦ CÔNG -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 2px;">
+                    <button id="btn_rule_start" onclick="manualStartRuleEngine()" style="padding: 6px; background: rgba(46, 204, 113, 0.2); border: 1px solid #2ecc71; color: #2ecc71; font-weight: 700; font-size: 11px; cursor: pointer; border-radius: 3px;">
+                        ▶ CHẠY THỬ
+                    </button>
+                    <button id="btn_rule_stop" onclick="stopRuleEngine(true, '⏹ Đã dừng kịch bản test')" disabled style="padding: 6px; background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; color: #e74c3c; font-weight: 700; font-size: 11px; cursor: pointer; border-radius: 3px; opacity: 0.5;">
+                        ⏹ DỪNG
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</aside>

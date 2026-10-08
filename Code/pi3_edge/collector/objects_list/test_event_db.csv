@@ -1,0 +1,40 @@
+EVENT_KEY,LABEL,GROUP,CONFLICT_SET,VISIBLE,SCOPE
+DESK_FLAT_STATIONARY,Đặt yên mặt bàn phẳng (Pitch/Roll ~ 0°),STATIC_TEST,MOTION_STATE,True,DYNAMIC
+STATIC_ZERO_BIAS_TEST,Đo độ trôi tĩnh Zero-G (30 giây),STATIC_TEST,MOTION_STATE,True,DYNAMIC
+UPSIDE_DOWN_STATIONARY,Đặt úp ngược cảm biến (Z -1G),STATIC_TEST,MOTION_STATE,True,DYNAMIC
+SIDE_TILTED_90_STATIONARY,Đặt dựng nghiêng cạnh 90° tĩnh,STATIC_TEST,MOTION_STATE,True,DYNAMIC
+CALIB_SYSTEM,Hiệu chuẩn Hệ thống BNO055 (Sys Calib),CALIBRATION,CALIB_STATE,True,DYNAMIC
+CALIB_GYRO,Hiệu chuẩn Con quay (Để yên tĩnh 5s),CALIBRATION,CALIB_STATE,True,DYNAMIC
+CALIB_ACCEL,Hiệu chuẩn Gia tốc (Đảo chậm 6 tư thế),CALIBRATION,CALIB_STATE,True,DYNAMIC
+CALIB_MAG_FIGURE_8,Hiệu chuẩn La bàn (Vẽ hình số 8 trong không gian),CALIBRATION,CALIB_STATE,True,DYNAMIC
+MAGNETIC_DISTURBANCE_TEST,Đưa lại gần vật sắt thép/nam châm test nhiễu,CALIBRATION,,True,DYNAMIC
+PAN_LEFT_YAW,Xoay tay sang trái quanh trục đứng (Yaw -),ORIENTATION_ROTATION,MOTION_STATE,True,DYNAMIC
+PAN_RIGHT_YAW,Xoay tay sang phải quanh trục đứng (Yaw +),ORIENTATION_ROTATION,MOTION_STATE,True,DYNAMIC
+TILT_UP_PITCH,Ngửa tay lật lên (Pitch Angle +),ORIENTATION_ROTATION,MOTION_STATE,True,DYNAMIC
+TILT_DOWN_PITCH,Úp tay lật xuống (Pitch Angle -),ORIENTATION_ROTATION,MOTION_STATE,True,DYNAMIC
+ROLL_LEFT_TILT,Lắc nghiêng tay sang trái (Roll Angle -),ORIENTATION_ROTATION,MOTION_STATE,True,DYNAMIC
+ROLL_RIGHT_TILT,Lắc nghiêng tay sang phải (Roll Angle +),ORIENTATION_ROTATION,MOTION_STATE,True,DYNAMIC
+FAST_SPIN_360,Xoay tròn nhanh 360° (Test Gyro Saturation),ORIENTATION_ROTATION,MOTION_STATE,True,DYNAMIC
+PUSH_FORWARD_ACCEL,Đẩy tay nhanh về phía trước (Ax +),LINEAR_MOTION,MOTION_STATE,True,DYNAMIC
+PULL_BACKWARD_BRAKE,Giật tay lùi về phía sau (Ax -),LINEAR_MOTION,MOTION_STATE,True,DYNAMIC
+SWERVE_LEFT_HAND,Lắc giật ngang tay sang trái (Ay +),LINEAR_MOTION,MOTION_STATE,True,DYNAMIC
+SWERVE_RIGHT_HAND,Lắc giật ngang tay sang phải (Ay -),LINEAR_MOTION,MOTION_STATE,True,DYNAMIC
+LIFT_UP_FAST,Nhấc bổng nhanh lên trời (Az + Vertical),LINEAR_MOTION,MOTION_STATE,True,DYNAMIC
+DROP_DOWN_FAST,Hạ xuống nhanh / Rơi nhẹ (Az - Vertical),LINEAR_MOTION,MOTION_STATE,True,DYNAMIC
+TABLE_TAP_LIGHT,Gõ nhẹ xuống mặt bàn (Impulse Spikes nhỏ),VIBRATION_IMPACT,MOTION_STATE,True,DYNAMIC
+TABLE_DROP_IMPACT,Thả rơi 5cm xuống mặt bàn mềm (Impact test),VIBRATION_IMPACT,MOTION_STATE,True,DYNAMIC
+HAND_SHAKING_FAST,Rung lắc tay liên tục tốc độ cao (Noise test),VIBRATION_IMPACT,MOTION_STATE,True,DYNAMIC
+SIMULATED_POTHOLE,Giả lập sập ổ gà (Giật mạnh xuống rồi nảy lên),VIBRATION_IMPACT,MOTION_STATE,True,DYNAMIC
+SMOOTH_DESK_SURFACE,Mặt bàn phẳng trơn (Kính/Gỗ),ROAD,ROAD_SURFACE,True,PRESET
+ROUGH_CARPET_SURFACE,Di trượt trên thảm nhám / vải gồ ghề,ROAD,ROAD_SURFACE,True,PRESET
+TILED_FLOOR_SURFACE,Di trượt trên sàn gạch lát có chỉ rãnh,ROAD,ROAD_SURFACE,True,PRESET
+BUMPY_BOOK_OBSTACLE,Di trượt qua lại qua gờ bìa sách (Simulated Bump),ROAD,ROAD_SURFACE,True,PRESET
+SLOW_HAND_MOTION,Tốc độ di chuyển tay chậm (< 0.5 m/s),SPEED_LIMIT,SPEED_LIMIT_STATE,True,PRESET
+MEDIUM_HAND_MOTION,Tốc độ di chuyển tay vừa (0.5 - 1.5 m/s),SPEED_LIMIT,SPEED_LIMIT_STATE,True,PRESET
+FAST_HAND_MOTION,Tốc độ di chuyển tay nhanh (> 1.5 m/s),SPEED_LIMIT,SPEED_LIMIT_STATE,True,PRESET
+INDOOR_ROOM_TEMP,Trong phòng nhiệt độ thường (25°C),ENVIRONMENT,ENV_STATE,True,PRESET
+NEAR_FAN_AC_AIRFLOW,Gần luồng gió quạt/điều hòa (Test Baro/Drift),ENVIRONMENT,ENV_STATE,True,PRESET
+DESK_LAMP_HEATING,Gần nguồn nhiệt đèn bàn ấm cảm biến,ENVIRONMENT,ENV_STATE,True,PRESET
+SIMULATED_I2C_DISCONNECT,Giả lập rút/lỏng dây bus kết nối I2C/UART,FAILURE,,True,DYNAMIC
+SIMULATED_IMU_RESET,Nhấn nút reset / khởi động lại BNO055,FAILURE,,True,DYNAMIC
+MAGNETIC_SATURATION,Đặt nam châm sát gây bão hòa từ trường la bàn,FAILURE,,True,DYNAMIC

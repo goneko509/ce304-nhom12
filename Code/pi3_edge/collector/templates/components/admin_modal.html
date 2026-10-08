@@ -1,0 +1,119 @@
+<style>
+/* ============ SYSTEM CUSTOM MODAL & TOAST UI ============ */
+.modal-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(4, 7, 12, 0.88); backdrop-filter: blur(8px); z-index: 100000;
+    justify-content: center; align-items: center; padding: 20px;
+    animation: modalFadeIn 0.2s ease-out;
+}
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.modal-box {
+    background: #0f141f; border: 1px solid #00ffcc; border-top: 4px solid #00ffcc;
+    border-radius: 10px; padding: 26px; min-width: 400px; max-width: 520px; width: 100%;
+    box-shadow: 0 16px 40px rgba(0, 255, 204, 0.25), 0 0 20px rgba(0,0,0,0.8);
+    font-family: 'Rajdhani', 'Orbitron', sans-serif;
+    transform: scale(0.96); transition: transform 0.2s ease;
+}
+.modal-overlay[style*="flex"] .modal-box {
+    transform: scale(1);
+}
+.modal-title {
+    font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 800; color: #00ffcc;
+    margin-bottom: 16px; display: flex; align-items: center; gap: 12px; letter-spacing: 1px;
+}
+.modal-body {
+    font-size: 17px; margin-bottom: 28px; line-height: 1.6; color: #e8f0f8; font-weight: 600;
+}
+.modal-footer {
+    display: flex; justify-content: flex-end; gap: 14px;
+}
+.btn-modal {
+    padding: 10px 22px; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 16px;
+    cursor: pointer; border-radius: 6px; transition: all 0.2s; text-transform: uppercase;
+    border: 1px solid #232c3a; background: #161c27; color: #e7eef6; letter-spacing: 1px;
+}
+.btn-modal:hover {
+    border-color: #00ffcc; color: #00ffcc; box-shadow: 0 0 12px rgba(0, 255, 204, 0.4);
+}
+.btn-modal-ok {
+    background: linear-gradient(135deg, rgba(0, 255, 204, 0.2), rgba(0, 224, 164, 0.3));
+    border-color: #00ffcc; color: #00ffcc; font-weight: 800;
+}
+.btn-modal-ok:hover {
+    background: #00ffcc; color: #000; box-shadow: 0 0 18px #00ffcc;
+}
+.btn-modal-cancel {
+    background: rgba(255, 59, 48, 0.15); border-color: #ff3b30; color: #ff3b30;
+}
+.btn-modal-cancel:hover {
+    background: #ff3b30; color: #fff; box-shadow: 0 0 15px #ff3b30;
+}
+</style>
+
+<div id="customModal" class="modal-overlay">
+    <div class="modal-box" id="modalBoxEl">
+        <div class="modal-title" id="modalTitle">⚠️ XÁC NHẬN</div>
+        <div class="modal-body" id="modalMessage">Nội dung thông báo</div>
+        <div class="modal-footer">
+            <button class="btn-modal btn-modal-cancel" id="modalBtnCancel">HỦY</button>
+            <button class="btn-modal btn-modal-ok" id="modalBtnOk">ĐỒNG Ý</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    window.customConfirm = function(title, message) {
+        return new Promise((resolve) => {
+            const overlay = document.getElementById('customModal');
+            const box = document.getElementById('modalBoxEl');
+            if (!overlay) { resolve(false); return; }
+            
+            document.getElementById('modalTitle').innerText = "⚠️ " + title;
+            document.getElementById('modalTitle').style.color = "#ffa028";
+            if (box) { box.style.borderColor = "#ffa028"; box.style.borderTopColor = "#ffa028"; }
+            document.getElementById('modalMessage').innerHTML = message;
+            
+            overlay.style.display = 'flex';
+            document.getElementById('modalBtnCancel').style.display = 'inline-block';
+            
+            document.getElementById('modalBtnOk').onclick = () => { overlay.style.display = 'none'; resolve(true); };
+            document.getElementById('modalBtnCancel').onclick = () => { overlay.style.display = 'none'; resolve(false); };
+        });
+    };
+
+    window.customAlert = function(title, message, type = "error") {
+        const overlay = document.getElementById('customModal');
+        const box = document.getElementById('modalBoxEl');
+        if (!overlay) return;
+        
+        const titleEl = document.getElementById('modalTitle');
+        titleEl.innerText = (type === "error" ? "🛑 " : "💡 ") + title;
+        const color = type === "error" ? "#ff3b30" : type === "warning" ? "#ffa028" : "#00ffcc";
+        titleEl.style.color = color;
+        if (box) { box.style.borderColor = color; box.style.borderTopColor = color; }
+        document.getElementById('modalMessage').innerHTML = message;
+        
+        overlay.style.display = 'flex';
+        document.getElementById('modalBtnCancel').style.display = 'none';
+        document.getElementById('modalBtnOk').onclick = () => overlay.style.display = 'none';
+    };
+
+    // Ghi đè window.alert và window.confirm gốc để không bao giờ hiện pop-up localhost say...
+    window.alert = function(msg) {
+        if (typeof customAlert === 'function') {
+            customAlert("THÔNG BÁO HỆ THỐNG", msg, "info");
+        }
+    };
+
+    window.confirm = function(msg) {
+        if (typeof customAlert === 'function') {
+            customAlert("LƯU Ý HỆ THỐNG", "Vui lòng sử dụng xác nhận không đồng bộ (customConfirm) cho thao tác: " + msg, "warning");
+        }
+        return false;
+    };
+})();
+</script>

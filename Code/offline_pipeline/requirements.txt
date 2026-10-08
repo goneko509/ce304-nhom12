@@ -1,0 +1,10 @@
+# May tinh phat trien (Windows/Linux) - tien xu ly, gan nhan heuristic, huan luyen, luong tu hoa, kiem dinh
+# Da chay voi Python 3.12 + TensorFlow 2.16.1
+numpy
+pandas
+scipy
+scikit-learn
+matplotlib
+folium
+tensorflow==2.16.1
+# tkinter: di kem Python (can cho GUI modular_app/main_app.py)

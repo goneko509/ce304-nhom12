@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOTA Raw Data Analytics - 3D Hub</title>
+    <!-- Fonts: Liberation Serif (mặc định cho kỹ sư) và các font công nghệ/code -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Liberation+Serif:ital,wght@0,400;0,700;1,400&family=Orbitron:wght@400;700&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;700&family=Roboto:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=2.9.1">
+    <link rel="stylesheet" href="analytics.css?v=2.9.1">
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+</head>
+
+<body>
+    <!-- TOP NAVIGATION BAR -->
+    <header class="analytics-header">
+        <div class="header-left">
+            <span class="logo-badge">🚀 SOTA AI READY</span>
+            <h1>RAW DATA QUALITY & CLEANLINESS AUDIT</h1>
+        </div>
+        <div class="header-right" style="display: flex; align-items: center; gap: 20px;">
+            <div class="font-selector-wrapper">
+                <label for="font_select" class="font-label">🎨 Font hiển thị:</label>
+                <select id="font_select" class="font-dropdown" onchange="changeGlobalFont(this.value)">
+                    <option value="Liberation Serif">Liberation Serif (Mặc định - Kỹ sư)</option>
+                    <option value="JetBrains Mono">JetBrains Mono (Code/Technical)</option>
+                    <option value="Orbitron">Orbitron (Sci-Fi / HUD)</option>
+                    <option value="Rajdhani">Rajdhani (Modern Telemetry)</option>
+                    <option value="Roboto">Roboto (Clean Standard)</option>
+                    <option value="Consolas">Consolas (Monospace Terminal)</option>
+                </select>
+            </div>
+            <a href="index.html" class="btn-nav-hub">⬅ QUAY LẠI 3D TELEMETRY HUB</a>
+        </div>
+    </header>
+
+    <div class="analytics-wrapper">
+        <!-- TOOLBAR CHỌN PHIÊN VÀ THƯ MỰC DỮ LIỆU -->
+        <div class="analytics-toolbar">
+            <div class="toolbar-left" style="display: flex; flex-wrap: wrap; align-items: center; gap: 20px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="toolbar-label" style="color: #00ffcc;">📁 Thư mục:</span>
+                    <select id="data_source_select" class="session-dropdown"
+                        style="background: rgba(0, 255, 204, 0.12); border: 1px solid #00ffcc; color: #00ffcc; font-weight: bold;"
+                        onchange="changeDataSource(this.value)">
+                        <option value="raw" selected>📦 Dữ liệu thô (`raw_data/`)</option>
+                        <option value="proc">⚙️ Dữ liệu đã xử lý (`proc_data/`)</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <label for="session_select" class="toolbar-label" id="session_select_label">📂 Phiên
+                        (`raw_data/`):</label>
+                    <select id="session_select" class="session-dropdown" onchange="loadSessionAnalytics(this.value)">
+                        <option value="">-- Đang tải danh sách phiên --</option>
+                    </select>
+                    <button class="btn-refresh" onclick="refreshSessionsList()" title="Làm mới danh sách phiên">🔄 Làm
+                        mới</button>
+                </div>
+            </div>
+            <div class="toolbar-right" id="session_meta_badge" style="display: none;">
+                <span class="meta-tag" id="meta_files">4/4 Files</span>
+            </div>
+        </div>
+
+        <!-- SCORECARD CARD GRID -->
+        <div class="scorecard-grid">
+            <div class="score-card main-score" id="card_score">
+                <div class="score-title">ĐIỂM CHẤT LƯỢNG SOTA</div>
+                <div class="score-value" id="score_value">--%</div>
+                <div class="score-desc" id="score_desc">Đang chọn phiên phân tích...</div>
+            </div>
+
+            <div class="score-card">
+                <div class="score-title">TẦN SỐ LẤY MẪU TRUNG BÌNH</div>
+                <div class="score-metrics">
+                    <div class="metric-item">
+                        <span class="metric-label">IMU:</span>
+                        <span class="metric-val" id="freq_imu">--</span> <span class="unit">Hz</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">GPS:</span>
+                        <span class="metric-val" id="freq_gps">--</span> <span class="unit">Hz</span>
+                    </div>
+                </div>
+                <div class="score-sub" id="freq_desc">Yêu cầu chuẩn SOTA: IMU ≥ 90Hz | GPS = 10Hz</div>
+            </div>
+
+            <div class="score-card">
+                <div class="score-title">KIỂM ĐỊNH LỖI / GIÁN ĐOẠN</div>
+                <div class="score-metrics">
+                    <div class="metric-item">
+                        <span class="metric-label">Gaps (Trễ):</span>
+                        <span class="metric-val warning" id="gaps_count">--</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Outliers (Xung):</span>
+                        <span class="metric-val danger" id="outliers_count">--</span>
+                    </div>
+                </div>
+                <div class="score-sub" id="gaps_desc">Gaps > 50ms (IMU) hoặc > 300ms (GPS)</div>
+            </div>
+
+            <div class="score-card">
+                <div class="score-title">TỔNG HỢP GÁN NHÃN SỰ KIỆN</div>
+                <div class="score-metrics">
+                    <div class="metric-item">
+                        <span class="metric-label">Sự kiện động:</span>
+                        <span class="metric-val info" id="events_total">--</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Phân đoạn đường:</span>
+                        <span class="metric-val success" id="roads_total">--</span>
+                    </div>
+                </div>
+                <div class="score-sub">Thời lượng phiên: <strong id="total_dur">--s</strong></div>
+            </div>
+        </div>
+
+        <!-- TABS VÀ KHU VỰC BIỂU ĐỒ TRỰC QUAN -->
+        <div class="analytics-tabs-container">
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('tab_imu', this)">📊 IMU 6 TRỤC (GIA TỐC &
+                    CONG)</button>
+                <button class="tab-btn" onclick="switchTab('tab_gps', this)">🛰 GPS SPEED & ALTITUDE</button>
+                <button class="tab-btn" onclick="switchTab('tab_traj', this)">📍 QUỸ ĐẠO 2D XY & SPEED HEATMAP</button>
+                <button class="tab-btn" onclick="switchTab('tab_audit', this)">🛠 SOTA AUDIT REPORT & LOGS</button>
+            </div>
+
+            <!-- TAB 1: IMU -->
+            <div class="tab-pane active" id="tab_imu">
+                <div style="display: flex; gap: 20px; align-items: flex-start; width: 100%;">
+                    
+                    <!-- BẢNG CẤU HÌNH KHÓA/MỞ KHÓA TỪNG SỰ KIỆN (SIDEBAR TRÁI) -->
+                    <div class="events-sidebar"
+                        style="flex: 0 0 380px; height: 800px; overflow-y: auto; background: rgba(7, 9, 14, 0.8); border: 1px solid rgba(0,255,204,0.2); border-radius: 10px; padding: 14px; position: sticky; top: 0; scrollbar-width: thin; scrollbar-color: rgba(0,255,204,0.3) transparent;">
+                        <!-- Sidebar Header -->
+                        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h4 style="margin: 0; color: #ff007f; font-size: 13px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+                                    <span style="background: rgba(255,0,127,0.15); border: 1px solid rgba(255,0,127,0.4); border-radius: 4px; padding: 2px 7px; font-size: 10px; color: #ff007f; font-weight: 700;">EVENTS</span>
+                                    🚩 Danh sách Sự kiện
+                                </h4>
+                                <div style="display: flex; gap: 5px;">
+                                    <button onclick="expandCollapseAllGroups(false)" title="Mở rộng tất cả nhóm" style="background: rgba(0,255,204,0.08); border: 1px solid rgba(0,255,204,0.35); color: #00ffcc; padding: 3px 9px; border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s; font-weight: 600;">▼ ALL</button>
+                                    <button onclick="expandCollapseAllGroups(true)" title="Thu gọn tất cả nhóm" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.2); color: #8899a6; padding: 3px 9px; border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s; font-weight: 600;">▶ ALL</button>
+                                </div>
+                            </div>
+                            <button class="btn-save-events" onclick="saveAllEventsToServer()">💾 Lưu thay đổi vào events.csv</button>
+                        </div>
+                        <div id="imu_events_cards_grid" style="display: flex; flex-direction: column; gap: 8px;">
+                            <!-- Các card sự kiện được render tự động qua JS -->
+                        </div>
+                    </div>
+
+                    <!-- MAIN CHART & TOOLS BÊN PHẢI -->
+                    <div class="chart-main-area" style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 15px;">
+                        <div class="panel-tools" style="flex-direction: column; align-items: stretch; gap: 10px; margin-bottom: 0;">
+                    <div
+                        style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
+                        <div class="tools-group">
+                            <span class="tool-label">Lớp Phủ (Overlays):</span>
+                            <label class="checkbox-trace"><input type="checkbox" id="chk_imu_ev" checked
+                                    onchange="toggleOverlay('chart_imu', 'events', this.checked)"> <span
+                                    style="color: #ff007f;">🚩 Sự kiện (`events.csv`)</span></label>
+                            <label class="checkbox-trace"><input type="checkbox" id="chk_imu_rd" checked
+                                    onchange="toggleOverlay('chart_imu', 'roads', this.checked)"> <span
+                                    style="color: #00ffcc;">🛣️ Loại đường (`roads.csv`)</span></label>
+                            <button class="btn-tool-action info"
+                                style="margin-left: 12px; background: rgba(0, 255, 204, 0.18); border: 1px solid #00ffcc; color: #00ffcc; font-weight: bold; cursor: pointer; padding: 4px 12px; border-radius: 4px;"
+                                onclick="saveAllEventsToServer()"
+                                title="Lưu các thay đổi thời gian sự kiện vào tệp events.csv">💾 Lưu sự kiện vào
+                                events.csv</button>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
+                        <div class="tools-group">
+                            <span class="tool-label">⚡ Gia tốc (m/s²):</span>
+                            <label class="checkbox-trace"><input type="checkbox" class="chk-imu" value="ax" checked
+                                    onchange="toggleImuTrace('ax', this.checked)"> <span
+                                    style="color: #00ffcc;">AX</span></label>
+                            <label class="checkbox-trace"><input type="checkbox" class="chk-imu" value="ay" checked
+                                    onchange="toggleImuTrace('ay', this.checked)"> <span
+                                    style="color: #ff007f;">AY</span></label>
+                            <label class="checkbox-trace"><input type="checkbox" class="chk-imu" value="az" checked
+                                    onchange="toggleImuTrace('az', this.checked)"> <span
+                                    style="color: #ffff00;">AZ</span></label>
+                        </div>
+                        <div class="tools-group"
+                            style="border-left: 1px solid rgba(255,255,255,0.15); padding-left: 15px;">
+                            <span class="tool-label">🔄 Vận tốc Góc (rad/s):</span>
+                            <label class="checkbox-trace"><input type="checkbox" class="chk-imu" value="gx"
+                                    onchange="toggleImuTrace('gx', this.checked)"> <span
+                                    style="color: #00aaff;">GX</span></label>
+                            <label class="checkbox-trace"><input type="checkbox" class="chk-imu" value="gy"
+                                    onchange="toggleImuTrace('gy', this.checked)"> <span
+                                    style="color: #ff8800;">GY</span></label>
+                            <label class="checkbox-trace"><input type="checkbox" class="chk-imu" value="gz"
+                                    onchange="toggleImuTrace('gz', this.checked)"> <span
+                                    style="color: #bb00ff;">GZ</span></label>
+                        </div>
+                        <div class="tools-group"
+                            style="border-left: 1px solid rgba(255,255,255,0.15); padding-left: 15px;">
+                            <span class="tool-label" style="color: #ffff00;">🧭 Góc Euler (°):</span>
+                            <label class="checkbox-trace"><input type="checkbox" class="chk-imu" value="ex"
+                                    onchange="toggleImuTrace('ex', this.checked)"> <span style="color: #33ff00;">EX
+                                    (Pitch °)</span></label>
+                            <label class="checkbox-trace"><input type="checkbox" class="chk-imu" value="ey"
+                                    onchange="toggleImuTrace('ey', this.checked)"> <span style="color: #ff3300;">EY
+                                    (Roll °)</span></label>
+                            <label class="checkbox-trace"><input type="checkbox" class="chk-imu" value="ez"
+                                    onchange="toggleImuTrace('ez', this.checked)"> <span style="color: #00ffff;">EZ (Yaw
+                                    °)</span></label>
+                        </div>
+                        <div class="tools-group"
+                            style="border-left: 1px solid rgba(255,255,255,0.15); padding-left: 15px;">
+                            <span class="tool-label" style="color: #ff00c8;">📐 Euler Sin/Cos [-1,1]:</span>
+                            <label class="checkbox-trace"><input type="checkbox" class="chk-imu" value="sin_yaw"
+                                    onchange="toggleImuTrace('sin_yaw', this.checked)"> <span
+                                    style="color: #ff66cc;">Sin(Yaw)</span></label>
+                            <label class="checkbox-trace"><input type="checkbox" class="chk-imu" value="cos_yaw"
+                                    onchange="toggleImuTrace('cos_yaw', this.checked)"> <span
+                                    style="color: #cc66ff;">Cos(Yaw)</span></label>
+                            <label class="checkbox-trace"><input type="checkbox" class="chk-imu" value="sin_roll"
+                                    onchange="toggleImuTrace('sin_roll', this.checked)"> <span
+                                    style="color: #66ccff;">Sin(Roll)</span></label>
+                            <label class="checkbox-trace"><input type="checkbox" class="chk-imu" value="cos_roll"
+                                    onchange="toggleImuTrace('cos_roll', this.checked)"> <span
+                                    style="color: #66ffcc;">Cos(Roll)</span></label>
+                            <label class="checkbox-trace"><input type="checkbox" class="chk-imu" value="sin_pitch"
+                                    onchange="toggleImuTrace('sin_pitch', this.checked)"> <span
+                                    style="color: #ffff66;">Sin(Pitch)</span></label>
+                            <label class="checkbox-trace"><input type="checkbox" class="chk-imu" value="cos_pitch"
+                                    onchange="toggleImuTrace('cos_pitch', this.checked)"> <span
+                                    style="color: #ff9966;">Cos(Pitch)</span></label>
+                        </div>
+                    </div>
+                    <div class="tools-actions" style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px;">
+                        <button class="btn-tool-action success" onclick="toggleAllImuTraces(true)">✔ Bật Tất Cả</button>
+                        <button class="btn-tool-action danger" onclick="toggleAllImuTraces(false)">✖ Tắt Tất Cả</button>
+                        <button class="btn-tool-action info" onclick="toggleImuGroup('acc')">⚡ Gia Tốc (ACC)</button>
+                        <button class="btn-tool-action info" onclick="toggleImuGroup('gyr')">🔄 Góc Gyro (GYR)</button>
+                        <button class="btn-tool-action info" style="border-color: #33ff00; color: #33ff00;"
+                            onclick="toggleImuGroup('eul')">🧭 Góc Euler (°)</button>
+                        <button class="btn-tool-action info" style="border-color: #ff66cc; color: #ff66cc;"
+                            onclick="toggleImuGroup('sincos')">📐 Sin/Cos Train Features</button>
+                        <span
+                            style="border-left: 1px solid rgba(255,255,255,0.15); height: 20px; margin: 0 5px;"></span>
+
+                    </div>
+                        </div>
+                        <div id="chart_imu" class="plotly-chart" style="height: 750px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: GPS -->
+            <div class="tab-pane" id="tab_gps">
+                <div class="panel-tools">
+                    <span class="tool-label">⚡ Thông số GPS:</span>
+                    <label class="checkbox-trace"><input type="checkbox" checked
+                            onchange="toggleGpsTrace(0, this.checked)"> <span style="color: #00ffcc;">Vận tốc
+                            (km/h)</span></label>
+                    <label class="checkbox-trace"><input type="checkbox" checked
+                            onchange="toggleGpsTrace(1, this.checked)"> <span style="color: #00aaff;">Độ cao
+                            (m)</span></label>
+                    <label class="checkbox-trace"><input type="checkbox" onchange="toggleGpsTrace(2, this.checked)">
+                        <span style="color: #ffff00;">Số Vệ tinh (Sats)</span></label>
+                    <div class="tools-group" style="border-left: 1px solid rgba(255,255,255,0.15); padding-left: 15px;">
+                        <span class="tool-label">Lớp Phủ:</span>
+                        <label class="checkbox-trace"><input type="checkbox" id="chk_gps_ev" checked
+                                onchange="toggleOverlay('chart_gps', 'events', this.checked)"> <span
+                                style="color: #ff007f;">🚩 Sự kiện (`events.csv`)</span></label>
+                        <label class="checkbox-trace"><input type="checkbox" id="chk_gps_rd" checked
+                                onchange="toggleOverlay('chart_gps', 'roads', this.checked)"> <span
+                                style="color: #00ffcc;">🛣️ Loại đường (`roads.csv`)</span></label>
+                    </div>
+                    <div class="tools-actions" style="margin-left: auto;">
+
+                    </div>
+                </div>
+                <div id="chart_gps" class="plotly-chart"></div>
+            </div>
+
+            <!-- TAB 3: TRAJECTORY -->
+            <div class="tab-pane" id="tab_traj">
+                <div class="panel-tools">
+                    <span class="tool-label">📍 Quỹ đạo di chuyển 2D (Kinh độ / Vĩ độ):</span>
+                    <div class="tools-group" style="border-left: 1px solid rgba(255,255,255,0.15); padding-left: 15px;">
+                        <span class="tool-label">Lớp Phủ:</span>
+                        <label class="checkbox-trace"><input type="checkbox" id="chk_traj_ev" checked
+                                onchange="toggleOverlay('chart_traj', 'events', this.checked)"> <span
+                                style="color: #ff007f;">🚩 Sự kiện (`events.csv`)</span></label>
+                        <label class="checkbox-trace"><input type="checkbox" id="chk_traj_rd" checked
+                                onchange="toggleOverlay('chart_traj', 'roads', this.checked)"> <span
+                                style="color: #00ffcc;">🛣️ Loại đường (`roads.csv`)</span></label>
+                    </div>
+                    <div class="tools-actions" style="margin-left: auto;">
+
+                    </div>
+                </div>
+                <div id="chart_traj" class="plotly-chart" style="height: 520px;"></div>
+            </div>
+
+            <!-- TAB 4: AUDIT REPORT & LOGS -->
+            <div class="tab-pane" id="tab_audit">
+                <div class="audit-grid">
+                    <div class="audit-left">
+                        <h3>📋 BẢNG KIỂM ĐỊNH CHUẨN SOTA AI</h3>
+                        <div id="audit_list" class="audit-list"></div>
+                    </div>
+                    <div class="audit-right">
+                        <h3>🏷 CHI TIẾT SỰ KIỆN & PHÂN ĐOẠN ĐƯỜNG ĐÃ GHI NHẬN</h3>
+                        <div class="tables-scroll">
+                            <h4>1. Danh sách Sự kiện Động (Events)</h4>
+                            <table class="data-table" id="table_events">
+                                <thead>
+                                    <tr>
+                                        <th>Bắt đầu (s)</th>
+                                        <th>Kết thúc (s)</th>
+                                        <th>Sự kiện</th>
+                                        <th>Nhãn SOTA</th>
+                                        <th>Nhóm</th>
+                                        <th>Đường</th>
+                                        <th>Khóa/Mở Khóa</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+
+                            <h4 style="margin-top: 20px;">2. Phân đoạn Bề mặt Đường (Road Segments)</h4>
+                            <table class="data-table" id="table_roads">
+                                <thead>
+                                    <tr>
+                                        <th>Bắt đầu (s)</th>
+                                        <th>Kết thúc (s)</th>
+                                        <th>Loại đường</th>
+                                        <th>Giới hạn tốc độ</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="analytics.js?v=2.9.3"></script>
+</body>
+
+</html>

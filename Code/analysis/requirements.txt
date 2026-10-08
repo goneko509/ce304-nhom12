@@ -1,0 +1,9 @@
+# Script phan tich phuc vu bao cao (chay tren may tinh)
+numpy
+pandas
+scipy
+matplotlib
+openpyxl
+scikit-learn
+joblib
+tensorflow==2.16.1   # chi can cho danh_gia_trip_giu_rieng.py

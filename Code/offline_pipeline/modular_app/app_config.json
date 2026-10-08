@@ -1,0 +1,262 @@
+{
+  "app_name": "Telemetry Pipeline Analyzer",
+  "version": "3.0",
+  "architecture": "Part -> Frame -> Tab (Module), 1 luong Notebook tuan tu duy nhat",
+  "parts": [
+    {
+      "id": "part_top",
+      "ten": "Nạp Dữ Liệu",
+      "loai": "Part",
+      "chuc_nang": "Chứa bộ chọn thư mục và tải dữ liệu thô tự động",
+      "frames": [
+        {
+          "id": "frame_top_bar",
+          "ten": "Frame Control Top",
+          "loai": "Frame",
+          "chuc_nang": "Khung điều khiển chứa module quét và nạp file .txt thô",
+          "tabs": [
+            {
+              "id": "panel_data_loader",
+              "ten": "Nạp Dữ Liệu Thô (GPS & IMU)",
+              "loai": "Module",
+              "chuc_nang": "Chọn thư mục, quét tự động RAW_GPS và RAW_ACCELEROMETERS, tự động nạp dữ liệu ngay khi tìm đúng 2 tệp",
+              "file_py": "panels/panel_data_loader.py",
+              "class_name": "PanelDataLoader",
+              "mo_ta": "Quét thư mục làm việc, tự động nhận diện tệp GPS/IMU và tự động nạp ngay vào bộ nhớ dùng chung cho toàn hệ thống khi thư mục chỉ chứa đúng 2 tệp thô (không cần bấm nút); chọn lại tệp bằng Combobox cũng tự nạp lại ngay.",
+              "co_so_khoa_hoc": [
+                "Ép kiểu số (pd.to_numeric) ngay khi nạp để bảo toàn tính toàn vẹn dữ liệu cảm biến trước khi xử lý.",
+                "Dữ liệu IMU tuân theo khuôn dạng cảm biến hợp nhất 9-DOF (BNO055): gia tốc, góc Euler, vận tốc góc, quaternion."
+              ],
+              "tham_khao": [
+                {"label": "Bosch BNO055 - Absolute Orientation Sensor", "url": "https://www.bosch-sensortec.com/products/smart-sensors/bno055/"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "part_body",
+      "ten": "Luồng Xử Lý Chính (Pipeline)",
+      "loai": "Part",
+      "chuc_nang": "1 Notebook tuần tự duy nhất, các Tab sắp xếp đúng trình tự xử lý dữ liệu từ thô đến suy luận AI",
+      "frames": [
+        {
+          "id": "frame_pipeline",
+          "ten": "Pipeline Xử Lý & Phân Tích",
+          "loai": "Frame",
+          "chuc_nang": "Khung làm việc chính, mỗi module chỉ xuất hiện đúng 1 lần theo thứ tự pipeline",
+          "tabs": [
+            {
+              "id": "panel_system_log",
+              "ten": "0. Nhật Ký Hệ Thống",
+              "loai": "Module",
+              "chuc_nang": "Nhật ký tính toán, thông báo hệ thống và lịch sử thao tác",
+              "file_py": "panels/panel_system_log.py",
+              "class_name": "PanelSystemLog",
+              "mo_ta": "Ghi nhận theo thời gian thực mọi thông báo, cảnh báo và kết quả tính toán phát ra từ các Tab khác.",
+              "co_so_khoa_hoc": [
+                "Mô hình Observer / Publisher-Subscriber: AppState phát sự kiện LOG, mọi Panel/Step đăng ký lắng nghe mà không cần tham chiếu trực tiếp lẫn nhau."
+              ],
+              "tham_khao": [
+                {"label": "Wikipedia - Observer pattern", "url": "https://en.wikipedia.org/wiki/Observer_pattern"}
+              ]
+            },
+            {
+              "id": "step1_quality_sync",
+              "ten": "1. Kiểm Tra Chất Lượng & Đồng Bộ Tần Số",
+              "loai": "Module",
+              "chuc_nang": "Phát hiện gián đoạn tín hiệu, tính tần số lấy mẫu thực tế, đồng bộ tần số & nội suy gộp GPS/IMU",
+              "file_py": "steps/step1_quality_sync.py",
+              "class_name": "Step1QualitySync",
+              "mo_ta": "Phát hiện khoảng trễ/đứt gãy tín hiệu, resample 2 nguồn GPS & IMU về cùng 1 tần số cố định, nội suy lấp đầy 100% khoảng trống và gộp thành 1 file CSV duy nhất.",
+              "co_so_khoa_hoc": [
+                "Định lý lấy mẫu Nyquist–Shannon: tần số đồng bộ mục tiêu phải đủ lớn so với tần số gốc để không mất thông tin tín hiệu.",
+                "Nội suy tuyến tính (linear interpolation) để xử lý dữ liệu khuyết (missing data) và sinh cờ chất lượng (is_interpolated).",
+                "Công thức Haversine để tính quãng đường di chuyển từ toạ độ GPS (lat/lon)."
+              ],
+              "tham_khao": [
+                {"label": "Wikipedia - Nyquist–Shannon sampling theorem", "url": "https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem"},
+                {"label": "Wikipedia - Haversine formula", "url": "https://en.wikipedia.org/wiki/Haversine_formula"},
+                {"label": "pandas - DataFrame.resample", "url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.resample.html"},
+                {"label": "pandas - DataFrame.interpolate", "url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.interpolate.html"}
+              ]
+            },
+            {
+              "id": "step2_statistics_viz",
+              "ten": "2. Thống Kê & Trực Quan Hóa",
+              "loai": "Module",
+              "chuc_nang": "Thống kê chỉ số min/max/mean và vẽ đồ thị trực quan hóa cho bất kỳ cột dữ liệu nào",
+              "file_py": "steps/step2_statistics_viz.py",
+              "class_name": "Step2StatisticsViz",
+              "mo_ta": "Tính các đại lượng thống kê mô tả (min/max/mean/std/median/quartile) và vẽ 3 dạng biểu đồ: chuỗi thời gian, cột thống kê, phân phối tần suất. Hỗ trợ tải lại tệp tùy chọn (nút Tải Lại Dữ Liệu) và tùy chọn bỏ dòng tiêu đề khi tệp có header (vd .csv).",
+              "co_so_khoa_hoc": [
+                "Thống kê mô tả (Descriptive statistics): trung bình, độ lệch chuẩn, trung vị.",
+                "Bách phân vị (percentile/quantile) để mô tả phân phối dữ liệu (Q25, Q75)."
+              ],
+              "tham_khao": [
+                {"label": "Wikipedia - Descriptive statistics", "url": "https://en.wikipedia.org/wiki/Descriptive_statistics"},
+                {"label": "NumPy - numpy.percentile", "url": "https://numpy.org/doc/stable/reference/generated/numpy.percentile.html"}
+              ]
+            },
+            {
+              "id": "step3_segment_filter",
+              "ten": "3. Phân Đoạn GPS & Gán Nhãn IMU",
+              "loai": "Module",
+              "chuc_nang": "Lọc đoạn GPS theo vận tốc, gán nhãn và đồng bộ đồ thị IMU, phân nhóm theo xác suất quãng đường",
+              "file_py": "steps/step3_segment_filter.py",
+              "class_name": "Step3SegmentFilter",
+              "mo_ta": "Tự động lọc các đoạn đường thỏa điều kiện vận tốc/IMU, phân nhóm theo bách phân vị quãng đường, và gán nhãn xuất đoạn IMU tương ứng.",
+              "co_so_khoa_hoc": [
+                "Công thức Haversine để tính quãng đường tích lũy mỗi đoạn.",
+                "Phân nhóm theo bách phân vị (quantile binning) quãng đường để chia đoạn ngắn/trung bình/dài.",
+                "Biến đổi lượng giác sin/cos cho góc Euler (yaw/roll/pitch) để tránh gián đoạn tại biên 0°/360° - kỹ thuật phổ biến trong nhận dạng hành vi từ cảm biến đeo (HAR)."
+              ],
+              "tham_khao": [
+                {"label": "Wikipedia - Haversine formula", "url": "https://en.wikipedia.org/wiki/Haversine_formula"},
+                {"label": "Ordóñez & Roggen (2016), Sensors - DOI 10.3390/s16010115", "url": "https://doi.org/10.3390/s16010115"},
+                {"label": "NumPy - numpy.percentile", "url": "https://numpy.org/doc/stable/reference/generated/numpy.percentile.html"}
+              ]
+            },
+            {
+              "id": "step4_route_map",
+              "ten": "4. Bản Đồ Hành Trình",
+              "loai": "Module",
+              "chuc_nang": "Hiển thị đoạn đường #ID trên bản đồ tổng thể route toàn trình, tự động zoom vào đoạn được chọn",
+              "file_py": "steps/step4_route_map.py",
+              "class_name": "Step4RouteMap",
+              "mo_ta": "Vẽ toàn tuyến đường theo toạ độ (kinh độ, vĩ độ), tô sáng đoạn #ID đang được chọn ở các Tab khác, tự động zoom khung nhìn vào trọn vẹn đoạn đó, và cho phép click lên bất kỳ điểm nào trên đoạn để mở Google Maps tại toạ độ đó.",
+              "co_so_khoa_hoc": [
+                "Phép chiếu Equirectangular xấp xỉ cục bộ: hiệu chỉnh tỉ lệ trục X/Y bằng cos(latitude) để tránh biến dạng hình học ở các vĩ độ khác 0°."
+              ],
+              "tham_khao": [
+                {"label": "Wikipedia - Equirectangular projection", "url": "https://en.wikipedia.org/wiki/Equirectangular_projection"}
+              ]
+            },
+            {
+              "id": "step5_background_idle",
+              "ten": "5. Phát Hiện Nền/Dừng Xe (Idle)",
+              "loai": "Module",
+              "chuc_nang": "Lọc dữ liệu nền (Background/Idle), đồng bộ GPS/IMU theo chuẩn SOTA",
+              "file_py": "steps/step5_background_idle.py",
+              "class_name": "Step5BackgroundIdle",
+              "mo_ta": "Đồng bộ GPS và IMU theo thời gian, phát hiện các đoạn xe đứng yên (dừng đèn đỏ/đỗ xe) bằng ngưỡng vận tốc kết hợp biên độ dao động cục bộ.",
+              "co_so_khoa_hoc": [
+                "pd.merge_asof (as-of join): ghép 2 chuỗi thời gian bất đồng bộ (GPS tần số thấp, IMU tần số cao) mà không rò rỉ dữ liệu tương lai.",
+                "Phát hiện trạng thái tĩnh bằng biên độ dao động cục bộ (Rolling Peak-to-Peak) để loại nhiễu bias/drift - cùng nguyên lý với Zero-Velocity Update (ZUPT) dùng trong định vị quán tính."
+              ],
+              "tham_khao": [
+                {"label": "pandas - merge_asof", "url": "https://pandas.pydata.org/docs/reference/api/pandas.merge_asof.html"},
+                {"label": "pandas - DataFrame.rolling", "url": "https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.rolling.html"}
+              ]
+            },
+            {
+              "id": "step6_model_training",
+              "ten": "6. Huấn Luyện Mô Hình AI (34 Nhãn & INT8)",
+              "loai": "Module",
+              "chuc_nang": "Gán nhãn cửa sổ chuỗi thời gian từ detected_driving_events_unified.csv (Step 8), huấn luyện mô hình phân loại 33 nhãn (Multi-scale Conv1D + SE + Residual) và lượng tử hóa INT8 cho Raspberry Pi",
+              "file_py": "steps/step6_model_training.py",
+              "class_name": "Step6ModelTraining",
+              "mo_ta": "CẤU HÌNH LẠI TOÀN BỘ dựa trên logic phát hiện nhãn của Step 8: gán nhãn 33 lớp (25 Primary G10/G20/G40/G80 + 8 Residual đặt tên tiếng Anh theo định nghĩa điều kiện, định nghĩa rõ ràng tại core/label_schema.py) cho từng cửa sổ trượt trong merged_motion_features.csv theo độ phủ (purity) với khoảng [start_time, end_time] của detected_driving_events_unified.csv; chia Train/Val/Test theo NHÓM event_id để chống rò rỉ dữ liệu; huấn luyện mạng Multi-scale Conv1D + Squeeze-Excitation + Residual (toàn Conv1D/Dense, tương thích lượng tử hóa INT8 toàn phần) với trọng số lớp cân bằng; đánh giá Precision/Recall/F1 từng nhãn; lượng tử hóa Post-Training INT8 (input/output int8 thật) và xuất kèm label_map.json để triển khai trên Raspberry Pi.",
+              "co_so_khoa_hoc": [
+                "Multi-scale Conv1D (kernel 3/5/9 song song, kiểu Inception-lite): bắt đồng thời biến động ngắn hạn (phanh/giật ga) và xu hướng dài hạn (rẽ) trong tín hiệu IMU.",
+                "Squeeze-and-Excitation (SE) block: tái trọng số kênh đặc trưng theo ngữ cảnh toàn cục, cải thiện độ chính xác mà không tăng nhiều tham số.",
+                "Residual connection: ổn định gradient khi mạng Conv1D sâu hơn.",
+                "Group-aware train/val/test split: nhóm toàn bộ cửa sổ của cùng 1 sự kiện vào cùng 1 tập, tránh rò rỉ dữ liệu (data leakage) giữa các cửa sổ trượt chồng lấp gần nhau.",
+                "Class-weighted loss (nghịch đảo tần suất, kiểu 'balanced'): giảm thiên vị khi 33 nhãn có độ mất cân bằng lớn (STOP/NORMAL chiếm đa số).",
+                "Post-Training Quantization INT8 toàn phần (full-integer, input/output int8): giảm ~3-4 lần dung lượng, phù hợp triển khai trên Raspberry Pi/vi điều khiển."
+              ],
+              "tham_khao": [
+                {"label": "Ordóñez & Roggen (2016), Sensors - DOI 10.3390/s16010115", "url": "https://doi.org/10.3390/s16010115"},
+                {"label": "Hu, Shen & Sun (2018) - Squeeze-and-Excitation Networks, arXiv:1709.01507", "url": "https://arxiv.org/abs/1709.01507"},
+                {"label": "He et al. (2016) - Deep Residual Learning, arXiv:1512.03385", "url": "https://arxiv.org/abs/1512.03385"},
+                {"label": "Jacob et al. (2018) - Quantization arXiv:1712.05877", "url": "https://arxiv.org/abs/1712.05877"},
+                {"label": "TensorFlow Lite - Post-training quantization", "url": "https://www.tensorflow.org/lite/performance/post_training_quantization"}
+              ]
+            },
+            {
+              "id": "step7_model_inference",
+              "ten": "7. Suy Luận Mô Hình AI (Kiểm Thử Trên File Thô)",
+              "loai": "Module",
+              "chuc_nang": "ĐẬP ĐI XÂY LẠI: chạy thử mô hình INT8 (Step 6) trực tiếp trên cặp file thô RAW_GPS.txt + RAW_ACCELEROMETERS.txt, cho nhập tần số quét IMU/GPS, hiển thị kết quả tại giao diện và xuất báo cáo văn bản (.txt)",
+              "file_py": "steps/step7_model_inference.py",
+              "class_name": "Step7ModelInference",
+              "mo_ta": "Kiểm thử end-to-end mô hình đã huấn luyện ở Step 6 trên dữ liệu thô mới: đọc 2 file RAW, nhận tần số quét THỰC TẾ do người dùng khai báo cho từng tín hiệu (IMU & GPS) để resample đúng về tần số mà model đã huấn luyện (chống lệch tần số lấy mẫu) và scale lại các cửa sổ làm mượt tương ứng, tái tạo lại chính xác pipeline đặc trưng của Step 8 (tránh training-serving skew), suy luận trượt cửa sổ trên mô hình INT8, gộp các cửa sổ liên tiếp cùng nhãn thành sự kiện, hiển thị Treeview + biểu đồ nhãn theo thời gian ngay trên giao diện, đối chiếu nhanh (tham khảo) với nhãn heuristic Step 8 nếu có, và xuất đồng thời báo cáo văn bản ai_inference_report.txt vào detected_events_unified/.",
+              "co_so_khoa_hoc": [
+                "Training-serving skew: suy luận PHẢI tái tạo chính xác cùng 1 pipeline đặc trưng (feature engineering) đã dùng lúc huấn luyện để tránh lệch phân phối đầu vào.",
+                "Resample tuyến tính về đúng tần số huấn luyện (fs) trước khi cắt cửa sổ cố định (timesteps) - đảm bảo cửa sổ suy luận có đúng số mẫu VÀ đúng thời lượng như lúc train.",
+                "Suy luận lượng tử hóa INT8 full-integer trên thiết bị biên (Edge Inference, Raspberry Pi).",
+                "Gộp cửa sổ liên tiếp cùng nhãn (temporal smoothing/event merging) để giảm nhiễu dự đoán theo từng cửa sổ đơn lẻ."
+              ],
+              "tham_khao": [
+                {"label": "TensorFlow Lite - Inference guide", "url": "https://www.tensorflow.org/lite/guide/inference"},
+                {"label": "Wikipedia - Training, validation, and test data sets (dataset shift)", "url": "https://en.wikipedia.org/wiki/Training,_validation,_and_test_data_sets"}
+              ]
+            },
+            {
+              "id": "step8_advanced_event_detection",
+              "ten": "8. Advanced Label Detection",
+              "loai": "Module",
+              "chuc_nang": "Phat hien 25 nhan hanh vi lai xe theo 4 dai toc do (G10/G20/G40/G80) + 8 nhan residual dat ten tieng Anh theo dinh nghia dieu kien, moi nhom tu chinh threshold rieng + nut Default, xuat CSV tuong ung va 1 file combine thong nhat",
+              "file_py": "steps/step8_advanced_event_detection.py",
+              "class_name": "Step8AdvancedEventDetection",
+              "mo_ta": "Port tu event_detector_unified_claude_advanced.py: sliding window 2s/0.1s tren tin hieu IMU+GPS da merge, phan loai rule-based theo tung dai toc do (Stop/Hard Brake/Sudden Accel/Steering/Normal) voi threshold chinh duoc tung Tab rieng, roi 1 tang Residual chi xet timeline chua duoc gan nhan de bat 9 mau hinh chuyen dong chua xac nhan ngu nghia. Moi Tab xuat CSV ung vien + event rieng; nut Run All combine toan bo thanh detected_driving_events_unified.csv. Toan bo luu vao thu muc con detected_events_unified/.",
+              "co_so_khoa_hoc": [
+                "Sliding window + rule-based threshold classification cho Human Activity Recognition tu cam bien IMU/GPS gan xe.",
+                "Rolling median smoothing de loc nhieu xung nhon truoc khi tinh dao ham (jerk = d(acc)/dt).",
+                "merge_asof theo timestamp gan nhat de dong bo GPS (toc do thap) voi IMU (~100Hz)."
+              ],
+              "tham_khao": [
+                {"label": "Wikipedia - Jerk (physics)", "url": "https://en.wikipedia.org/wiki/Jerk_(physics)"},
+                {"label": "pandas - merge_asof", "url": "https://pandas.pydata.org/docs/reference/api/pandas.merge_asof.html"}
+              ]
+            },
+            {
+              "id": "step9_3d_map_visualizer",
+              "ten": "9. 3D Motion & Map Visualizer",
+              "loai": "Module",
+              "chuc_nang": "Tao ban do Folium tuong tac tu detected_driving_events_unified.csv + mo phong dong luc hoc 3D (Three.js) khi click tung su kien, mo qua local HTTP server va tu dong reload tab dang mo khi tao lai ban do",
+              "file_py": "steps/step9_3d_map_visualizer.py",
+              "class_name": "Step9MapVisualizer",
+              "mo_ta": "Port tu event_visualizer_3d_pro_gemini.py (giu nguyen 100% logic/giao dien goc): ve GPS Track + marker mau theo 25+ nhan su kien, Legend/Sidebar co the dong/mo, popup chi tiet, mo phong 3D Three.js voi sliding window buffer 10s chong giat lag, bang tinh chinh vat ly realtime. Thay doi duy nhat: server local duoc tai su dung giua cac lan tao lai ban do, trang web dang mo tu dong location.reload() ngay khi phat hien HTML vua duoc ghi lai (khong can F5 thu cong, khong mo tran lan tab moi).",
+              "co_so_khoa_hoc": [
+                "Phuong phap Dead Reckoning: tich hop van toc + goc Yaw theo thoi gian de uoc luong quy dao 2D lam quy dao hien thi cho mo phong 3D.",
+                "Sliding Window Buffer: chi nap va giu truoc bo nho mot doan du lieu ngan (10s) xung quanh thoi diem hien tai de mo phong tran tru, khong load toan bo file lon vao bo nho cung luc.",
+                "HTTP conditional caching (header Last-Modified): client tu HEAD-poll chinh trang de phat hien thay doi tren server va tu lam moi, khong can WebSocket."
+              ],
+              "tham_khao": [
+                {"label": "Folium documentation", "url": "https://python-visualization.github.io/folium/"},
+                {"label": "Three.js documentation", "url": "https://threejs.org/docs/"},
+                {"label": "MDN - Dead reckoning", "url": "https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_on_the_web/Optimizing_startup"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "part_bottom",
+      "ten": "Thành Phần Bottom",
+      "loai": "Part",
+      "chuc_nang": "Thanh trạng thái và thông tin hệ thống",
+      "frames": [
+        {
+          "id": "frame_bottom_status",
+          "ten": "Frame Status Bottom",
+          "loai": "Frame",
+          "chuc_nang": "Khung chứa thanh trạng thái dưới cùng",
+          "tabs": [
+            {
+              "id": "panel_status_bar",
+              "ten": "Bottom Status Bar",
+              "loai": "Module",
+              "chuc_nang": "Hiển thị tổng số mẫu dữ liệu và trạng thái làm việc",
+              "file_py": "panels/panel_status_bar.py",
+              "class_name": "PanelStatusBar"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

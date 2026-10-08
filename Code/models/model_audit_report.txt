@@ -1,0 +1,187 @@
+================================================================================
+📌 CHƯƠNG TRÌNH KIỂM ĐỊNH MÔ HÌNH THEO KHUNG KHOA HỌC 3 TẦNG (DRIVESAFE AUDIT)
+📍 Thời điểm kiểm thử: 2026-10-02 13:44:13
+📍 Tổng số cửa sổ trượt trong tập Test: 10,352
+📍 Tổng số sự kiện (group) trong tập Test: 412
+📍 Thư mục: D:\0. UIT\0 - KHOALUAN\Pi3\raw_data_collection\raw_data\0-Trips\trained_model_multi_trip
+📍 Số trip: 13
+--------------------------------------------------------------------------------
+Lưu ý phương pháp: bài toán ở đây là ĐA NHÃN THỰC SỰ (15 cờ độc lập,
+sigmoid, ngưỡng 0.5 — 1 cửa sổ có thể mang NHIỀU cờ đồng thời, vd vừa
+BRAKE_HARD vừa STEERING). Tầng 2 dùng majority-vote ĐỘC LẬP TỪNG CỜ theo
+group_id THẬT (từ CSV Step 8) thay vì dò contiguous-run, chính xác hơn khi
+dữ liệu Test được gộp từ nhiều trip. Vì là đa nhãn thực sự, Micro-F1 KHÔNG
+còn bằng Exact Match Ratio (vai trò tương tự 'Accuracy' cũ): 1 cửa sổ đúng
+14/15 cờ vẫn góp phần đúng vào Micro-F1 nhưng bị tính SAI HOÀN TOÀN trong
+Exact Match Ratio — đây là khác biệt CHỦ ĐÍCH so với bài toán đơn nhãn trước
+đây, không phải lỗi. Chi tiết công thức: xem core/model_audit.py.
+================================================================================
+
+🔍 Đang đánh giá Mô hình: Keras FP32 Model (driversafe_event_classifier_fp32.keras)...
+
+  📊 TẦNG 1: BẢNG CHỈ SỐ WINDOW-LEVEL (chỉ hiện cờ có mẫu trong Test)
+  Cờ                     | Prec    | Recall  | F1      | PR-AUC  | ROC-AUC | Support
+  ------------------------------------------------------------------------------------
+  NORMAL                 |   89.9% |   95.2% |   92.5% |  0.982 |  0.967 |    6526
+  SPEED_G40              |   82.8% |   98.2% |   89.9% |  0.961 |  0.986 |    3791
+  SPEED_G10              |   95.3% |   97.7% |   96.5% |  0.995 |  0.998 |    3326
+  STOP                   |   94.0% |   86.1% |   89.9% |  0.935 |  0.990 |    2707
+  SPEED_G20              |   73.5% |   97.8% |   83.9% |  0.931 |  0.984 |    2081
+  JERK_TRANSIENT         |   28.7% |   84.3% |   42.9% |  0.593 |  0.934 |     657
+  SPEED_G80              |   27.1% |   98.0% |   42.4% |  0.891 |  0.994 |     302
+  BRAKE_HARD             |   33.6% |   92.5% |   49.3% |  0.772 |  0.979 |     173
+  STEERING               |   36.1% |   94.1% |   52.2% |  0.460 |  0.990 |     170
+  ACCEL_MODERATE         |   14.8% |   99.2% |   25.7% |  0.343 |  0.986 |     125
+  ACCEL_HARD             |   20.1% |   89.4% |   32.8% |  0.472 |  0.979 |      94
+  BRAKE_MODERATE         |   12.0% |   77.2% |   20.8% |  0.164 |  0.957 |      57
+  STEERING_ANOMALY       |   17.8% |  100.0% |   30.2% |  0.225 |  0.998 |      13
+  ------------------------------------------------------------------------------------
+  • Exact Match Ratio (khớp cả 15 cờ): 57.63%
+  • Macro F1-Score    : 57.61%
+  • Micro F1-Score    : 83.05%  (KHÔNG bằng Exact Match Ratio — xem lưu ý phương pháp ở trên)
+
+  ⏱️ TẦNG 2: BẢNG CHỈ SỐ MỨC SỰ KIỆN (Majority-Vote độc lập từng cờ theo group_id thật)
+  Cờ                     | Ev.Prec  | Ev.Recall | Ev.F1   | Support (events)
+  ------------------------------------------------------------------------
+  NORMAL                 |    81.3% |     91.2% |   86.0% |     205
+  SPEED_G20              |    61.9% |     95.7% |   75.2% |     117
+  SPEED_G10              |    85.1% |     88.9% |   87.0% |      90
+  SPEED_G40              |    63.6% |     96.5% |   76.6% |      85
+  JERK_TRANSIENT         |    33.3% |     86.7% |   48.1% |      75
+  STOP                   |    87.8% |     84.3% |   86.0% |      51
+  BRAKE_HARD             |    49.2% |     96.9% |   65.3% |      32
+  STEERING               |    46.7% |    100.0% |   63.6% |      28
+  ACCEL_MODERATE         |    27.6% |    100.0% |   43.2% |      24
+  ACCEL_HARD             |    27.5% |     93.3% |   42.4% |      15
+  SPEED_G80              |    58.8% |     90.9% |   71.4% |      11
+  BRAKE_MODERATE         |    15.4% |     88.9% |   26.2% |       9
+  STEERING_ANOMALY       |    14.3% |    100.0% |   25.0% |       1
+  ------------------------------------------------------------------------
+  • Số sự kiện đánh giá    : 412
+  • Event Exact Match Ratio: 32.28%
+  • Event Macro F1-Score   : 61.24%
+
+  ⚡ Benchmark tốc độ (suy luận từng cửa sổ riêng lẻ, n=500 mẫu):
+    Dung lượng: 1193.4 KB | Độ trễ TB: 30.260 ms (±6.846) | Throughput: 33.0 FPS
+
+================================================================================
+
+🔍 Đang đánh giá Mô hình: TFLite FP32 Model (driversafe_event_classifier_fp32.tflite)...
+
+  📊 TẦNG 1: BẢNG CHỈ SỐ WINDOW-LEVEL (chỉ hiện cờ có mẫu trong Test)
+  Cờ                     | Prec    | Recall  | F1      | PR-AUC  | ROC-AUC | Support
+  ------------------------------------------------------------------------------------
+  NORMAL                 |   89.9% |   95.2% |   92.5% |  0.982 |  0.967 |    6526
+  SPEED_G40              |   82.8% |   98.2% |   89.9% |  0.961 |  0.986 |    3791
+  SPEED_G10              |   95.3% |   97.7% |   96.5% |  0.995 |  0.998 |    3326
+  STOP                   |   94.0% |   86.1% |   89.9% |  0.935 |  0.990 |    2707
+  SPEED_G20              |   73.5% |   97.8% |   83.9% |  0.931 |  0.984 |    2081
+  JERK_TRANSIENT         |   28.7% |   84.3% |   42.9% |  0.593 |  0.934 |     657
+  SPEED_G80              |   27.1% |   98.0% |   42.4% |  0.891 |  0.994 |     302
+  BRAKE_HARD             |   33.6% |   92.5% |   49.3% |  0.772 |  0.979 |     173
+  STEERING               |   36.1% |   94.1% |   52.2% |  0.460 |  0.990 |     170
+  ACCEL_MODERATE         |   14.8% |   99.2% |   25.7% |  0.343 |  0.986 |     125
+  ACCEL_HARD             |   20.1% |   89.4% |   32.8% |  0.472 |  0.979 |      94
+  BRAKE_MODERATE         |   12.0% |   77.2% |   20.8% |  0.164 |  0.957 |      57
+  STEERING_ANOMALY       |   17.8% |  100.0% |   30.2% |  0.225 |  0.998 |      13
+  ------------------------------------------------------------------------------------
+  • Exact Match Ratio (khớp cả 15 cờ): 57.63%
+  • Macro F1-Score    : 57.61%
+  • Micro F1-Score    : 83.05%  (KHÔNG bằng Exact Match Ratio — xem lưu ý phương pháp ở trên)
+
+  ⏱️ TẦNG 2: BẢNG CHỈ SỐ MỨC SỰ KIỆN (Majority-Vote độc lập từng cờ theo group_id thật)
+  Cờ                     | Ev.Prec  | Ev.Recall | Ev.F1   | Support (events)
+  ------------------------------------------------------------------------
+  NORMAL                 |    81.3% |     91.2% |   86.0% |     205
+  SPEED_G20              |    61.9% |     95.7% |   75.2% |     117
+  SPEED_G10              |    85.1% |     88.9% |   87.0% |      90
+  SPEED_G40              |    63.6% |     96.5% |   76.6% |      85
+  JERK_TRANSIENT         |    33.3% |     86.7% |   48.1% |      75
+  STOP                   |    87.8% |     84.3% |   86.0% |      51
+  BRAKE_HARD             |    49.2% |     96.9% |   65.3% |      32
+  STEERING               |    46.7% |    100.0% |   63.6% |      28
+  ACCEL_MODERATE         |    27.6% |    100.0% |   43.2% |      24
+  ACCEL_HARD             |    27.5% |     93.3% |   42.4% |      15
+  SPEED_G80              |    58.8% |     90.9% |   71.4% |      11
+  BRAKE_MODERATE         |    15.4% |     88.9% |   26.2% |       9
+  STEERING_ANOMALY       |    14.3% |    100.0% |   25.0% |       1
+  ------------------------------------------------------------------------
+  • Số sự kiện đánh giá    : 412
+  • Event Exact Match Ratio: 32.28%
+  • Event Macro F1-Score   : 61.24%
+
+  ⚡ Benchmark tốc độ (suy luận từng cửa sổ riêng lẻ, n=500 mẫu):
+    Dung lượng: 362.1 KB | Độ trễ TB: 0.141 ms (±0.037) | Throughput: 7078.9 FPS
+
+================================================================================
+
+🔍 Đang đánh giá Mô hình: TFLite INT8 Model (driversafe_event_classifier_int8.tflite)...
+
+  📊 TẦNG 1: BẢNG CHỈ SỐ WINDOW-LEVEL (chỉ hiện cờ có mẫu trong Test)
+  Cờ                     | Prec    | Recall  | F1      | PR-AUC  | ROC-AUC | Support
+  ------------------------------------------------------------------------------------
+  NORMAL                 |   90.6% |   76.4% |   82.9% |  0.937 |  0.917 |    6526
+  SPEED_G40              |   88.4% |   96.9% |   92.5% |  0.962 |  0.984 |    3791
+  SPEED_G10              |   95.0% |   96.3% |   95.6% |  0.995 |  0.997 |    3326
+  STOP                   |   91.8% |   95.8% |   93.8% |  0.978 |  0.994 |    2707
+  SPEED_G20              |   67.0% |   86.1% |   75.3% |  0.691 |  0.939 |    2081
+  JERK_TRANSIENT         |   13.0% |   85.8% |   22.6% |  0.190 |  0.784 |     657
+  SPEED_G80              |   26.5% |   98.0% |   41.8% |  0.864 |  0.992 |     302
+  BRAKE_HARD             |   24.0% |   87.9% |   37.7% |  0.499 |  0.968 |     173
+  STEERING               |   27.5% |   78.2% |   40.7% |  0.432 |  0.884 |     170
+  ACCEL_MODERATE         |    1.6% |    0.8% |    1.1% |  0.030 |  0.743 |     125
+  ACCEL_HARD             |   43.9% |   26.6% |   33.1% |  0.198 |  0.862 |      94
+  BRAKE_MODERATE         |    4.2% |   56.1% |    7.8% |  0.027 |  0.852 |      57
+  STEERING_ANOMALY       |    8.6% |   38.5% |   14.1% |  0.069 |  0.989 |      13
+  ------------------------------------------------------------------------------------
+  • Exact Match Ratio (khớp cả 15 cờ): 45.06%
+  • Macro F1-Score    : 49.15%
+  • Micro F1-Score    : 75.80%  (KHÔNG bằng Exact Match Ratio — xem lưu ý phương pháp ở trên)
+
+  ⏱️ TẦNG 2: BẢNG CHỈ SỐ MỨC SỰ KIỆN (Majority-Vote độc lập từng cờ theo group_id thật)
+  Cờ                     | Ev.Prec  | Ev.Recall | Ev.F1   | Support (events)
+  ------------------------------------------------------------------------
+  NORMAL                 |    71.5% |     64.9% |   68.0% |     205
+  SPEED_G20              |    58.1% |     85.5% |   69.2% |     117
+  SPEED_G10              |    83.3% |     83.3% |   83.3% |      90
+  SPEED_G40              |    66.4% |     90.6% |   76.6% |      85
+  JERK_TRANSIENT         |    22.8% |     88.0% |   36.3% |      75
+  STOP                   |    82.0% |     98.0% |   89.3% |      51
+  BRAKE_HARD             |    36.1% |     93.8% |   52.2% |      32
+  STEERING               |    43.9% |     89.3% |   58.8% |      28
+  ACCEL_MODERATE         |     0.0% |      0.0% |    0.0% |      24
+  ACCEL_HARD             |    66.7% |     26.7% |   38.1% |      15
+  SPEED_G80              |    43.5% |     90.9% |   58.8% |      11
+  BRAKE_MODERATE         |     6.7% |     66.7% |   12.1% |       9
+  STEERING_ANOMALY       |     0.0% |      0.0% |    0.0% |       1
+  ------------------------------------------------------------------------
+  • Số sự kiện đánh giá    : 412
+  • Event Exact Match Ratio: 22.33%
+  • Event Macro F1-Score   : 49.44%
+
+  ⚡ Benchmark tốc độ (suy luận từng cửa sổ riêng lẻ, n=500 mẫu):
+    Dung lượng: 121.0 KB | Độ trễ TB: 0.061 ms (±0.017) | Throughput: 16457.1 FPS
+
+================================================================================
+
+⚡ TẦNG 3: BẢNG SO SÁNH TỔNG HỢP EDGE AI & PHẦN CỨNG (KERAS FP32 vs TFLITE FP32 vs TFLITE INT8)
+  Tên mô hình          | Dung lượng   | Độ trễ         | Throughput   | Macro F1 (Win)   | Macro F1 (Event)
+  ----------------------------------------------------------------------------------------------------
+  Keras FP32 Model     | 1.17 MB      | 30.260 ms      | 33.0 FPS     | 57.61%           | 61.24%
+  TFLite FP32 Model    | 362.1 KB     | 0.141 ms       | 7078.9 FPS   | 57.61%           | 61.24%
+  TFLite INT8 Model    | 121.0 KB     | 0.061 ms       | 16457.1 FPS  | 49.15%           | 49.44%
+
+  🎯 ĐÁNH GIÁ KẾT QUẢ TỐI ƯU HÓA LƯỢNG TỬ HÓA (INT8 vs FP32):
+    • Mô hình gốc so sánh                      : TFLite FP32 Model
+    • Tỉ lệ nén dung lượng (Compression Ratio) : 2.99x (giảm 66.6% kích thước)
+    • Mức suy giảm Macro F1-Score (ΔF1, Window): 8.46%
+    ⚠️ CẢNH BÁO: Mức suy giảm F1 > 1.0% — cần tinh chỉnh lại tập đại diện
+       (representative dataset) khi lượng tử hóa, hoặc xem xét kiến trúc
+       mô hình để tăng độ bền với lượng tử hóa (quantization-robustness).
+
+    • Compression Ratio : 2.99x
+    • Delta Macro-F1    : 8.46%
+
+================================================================================
+🎉 ĐÃ HOÀN THÀNH QUY TRÌNH KIỂM ĐỊNH MÔ HÌNH DRIVESAFE AUDIT!
+================================================================================

@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Du lieu tho va ket qua sinh ra (khong dua len repo)
+raw_data/
+proc_data/
+**/detected_events_unified/
+**/bench_results/
+thongke_output/
+models_eval/
+*.npz
+
+# Noi dung trao doi voi tro ly AI (khong dua len repo)
+docs/hard_braking_scientific_definition.md
+docs/ai_training_pipeline_multitrip.md
+
+# Cau hinh ca nhan / IDE
+.vscode/
+.idea/
+.cache/
+*.log
+.env
+
+# He dieu hanh
+Thumbs.db
+.DS_Store

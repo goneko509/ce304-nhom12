@@ -1,0 +1,147 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Quản Trị Sự Kiện - Admin HUD{% endblock %}
+
+{% block head_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="header">
+    <div class="title">💠 Event Database Manager</div>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <div style="display: flex; align-items: center; gap: 5px; background: rgba(0, 255, 255, 0.1); border: 1px solid var(--cyan); padding: 5px 12px; border-radius: 6px;">
+            <span style="font-size: 13px; color: var(--cyan); font-weight: bold;">📦 MODEL OBJECT:</span>
+            <select id="admin_object_selector" onchange="switchAdminObject(this.value)" style="background: transparent; color: #fff; border: none; font-size: 13px; font-weight: bold; cursor: pointer; outline: none;">
+                {% if available_objects %}
+                    {% for obj in available_objects %}
+                    <option value="{{ obj }}" {% if obj == active_object %}selected{% endif %} style="background: #111; color: #fff;">{{ obj | replace('_event_db.csv', '') | replace('.csv', '') | upper }} ({{ obj }})</option>
+                    {% endfor %}
+                {% else %}
+                    <option value="event_db.csv">DEFAULT</option>
+                {% endif %}
+            </select>
+        </div>
+        <a href="/"><button class="btn">⬅ Trở về HUD</button></a>
+    </div>
+</div>
+
+<div class="layout">
+    <!-- CỘT TRÁI: QUẢN LÝ FORM -->
+    <div class="left-col">
+        <!-- KHU VỰC THÊM/SỬA SỰ KIỆN -->
+        <div class="card">
+            <h3 id="formTitle" style="color: var(--cyan);">➕ Thêm Sự Kiện / Tạo Nhóm Mới</h3>
+            <input type="hidden" id="editMode" value="false">
+            <input type="hidden" id="oldKey" value="">
+
+            <div class="form-group">
+                <label>EVENT_KEY (Mã sự kiện)</label>
+                <input type="text" id="evKey" class="form-control" placeholder="VD: HARSH_ACCELERATION" style="text-transform: uppercase;">
+            </div>
+            <div class="form-group">
+                <label>LABEL (Tên hiển thị)</label>
+                <input type="text" id="evLabel" class="form-control" placeholder="VD: Tăng tốc đột ngột">
+            </div>
+            <div class="form-group">
+                <label>GROUP (Nhóm UI - Gõ mới để tạo)</label>
+                <input type="text" id="evGroup" class="form-control" list="groupList" placeholder="Chọn hoặc GÕ TÊN MỚI...">
+                <datalist id="groupList"></datalist>
+            </div>
+            <div class="form-group">
+                <label>CONFLICT_SET (Gõ mới để tạo)</label>
+                <input type="text" id="evConflict" class="form-control" list="conflictList" placeholder="Chọn hoặc GÕ TÊN MỚI...">
+                <datalist id="conflictList"></datalist>
+            </div>
+            <div class="form-group">
+                <label>PHÍM PS5 (Gán nút điều khiển)</label>
+                <select id="evPs5" class="form-control" style="background-color: #222; color: #fff;">
+                    <option value="">-- Không gán --</option>
+                    <option value="BTN_SOUTH">Cross (X)</option>
+                    <option value="BTN_EAST">Circle (O)</option>
+                    <option value="BTN_WEST">Square (Vuông)</option>
+                    <option value="BTN_NORTH">Triangle (Tam giác)</option>
+                    <option value="BTN_TL">L1</option>
+                    <option value="BTN_TR">R1</option>
+                    <option value="BTN_TL2">L2</option>
+                    <option value="BTN_TR2">R2</option>
+                    <option value="BTN_DPAD_UP">D-Pad Lên</option>
+                    <option value="BTN_DPAD_DOWN">D-Pad Xuống</option>
+                    <option value="BTN_DPAD_LEFT">D-Pad Trái</option>
+                    <option value="BTN_DPAD_RIGHT">D-Pad Phải</option>
+                    <option value="BTN_SELECT">Share</option>
+                    <option value="BTN_START">Options</option>
+                    <option value="BTN_MODE">PS Button</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-save" style="flex: 1;" onclick="saveEvent()">Lưu Sự Kiện</button>
+                <button class="btn" onclick="resetForm()">Hủy</button>
+            </div>
+        </div>
+
+        <!-- KHU VỰC ĐỔI TÊN NHÓM TRỰC TIẾP -->
+        <div class="card" style="border-color: var(--amber); box-shadow: 0 0 10px rgba(255, 160, 40, 0.1);">
+            <h3 style="color: var(--amber);">🗂️ Đổi Tên Nhóm Hàng Loạt</h3>
+            <div class="form-group">
+                <label>Nhóm UI (GROUP)</label>
+                <select id="editGroupSelect" class="form-control" style="margin-bottom: 5px;"></select>
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" id="newGroupInput" class="form-control" placeholder="Nhập tên mới..." style="flex: 1;">
+                    <button class="btn btn-save" onclick="renameTarget('GROUP', 'editGroupSelect', 'newGroupInput')">Đổi</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Tập Xung Đột (CONFLICT_SET)</label>
+                <select id="editConflictSelect" class="form-control" style="margin-bottom: 5px;"></select>
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" id="newConflictInput" class="form-control" placeholder="Nhập tên mới..." style="flex: 1;">
+                    <button class="btn btn-save" onclick="renameTarget('CONFLICT_SET', 'editConflictSelect', 'newConflictInput')">Đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CỘT PHẢI: BẢNG DỮ LIỆU & LỌC -->
+    <div class="card">
+        <div class="table-toolbar">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Tìm kiếm tên, key, sự kiện...">
+                <span class="shortcut-hint">Shift + Space</span>
+            </div>
+            <select id="filterGroup" class="filter-select" onchange="applySearch()">
+                <option value="">-- Tất cả Nhóm UI --</option>
+            </select>
+            <select id="filterConflict" class="filter-select" onchange="applySearch()">
+                <option value="">-- Tất cả Xung Đột --</option>
+            </select>
+            <div style="display: flex; gap: 5px;">
+                <button class="btn btn-save" onclick="toggleAll(true)" style="padding: 8px 10px;">👁️ Bật Tất Cả</button>
+                <button class="btn" style="color: var(--text-dim); padding: 8px 10px;" onclick="toggleAll(false)">🚫 Tắt Tất Cả</button>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="eventTable">
+                <thead>
+                    <tr>
+                        <th style="width: 140px;">TRẠNG THÁI HUD</th>
+                        <th>KEY</th>
+                        <th>LABEL</th>
+                        <th>GROUP</th>
+                        <th>CONFLICT_SET</th>
+                        <th>PHÍM PS5</th>
+                        <th style="width: 120px;">HÀNH ĐỘNG</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

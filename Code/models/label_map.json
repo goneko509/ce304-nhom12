@@ -1,0 +1,442 @@
+{
+  "schema": "driversafe_label_map_v3",
+  "generated_at": "2026-10-02T06:44:13.979404+00:00",
+  "num_classes": 33,
+  "labels": [
+    {
+      "id": 0,
+      "name": "STOP_RED_LIGHT",
+      "display_name": "Dừng / Có thể dừng đèn đỏ",
+      "group": "G10",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 1,
+      "name": "HARD_BRAKE",
+      "display_name": "Thắng gấp (<10 km/h)",
+      "group": "G10",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 2,
+      "name": "HARD_BRAKE_STEERING",
+      "display_name": "Thắng gấp + Đánh lái (<10 km/h)",
+      "group": "G10",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 3,
+      "name": "SUDDEN_ACCEL",
+      "display_name": "Giật ga đột ngột (<10 km/h)",
+      "group": "G10",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 4,
+      "name": "SUDDEN_ACCEL_STEERING",
+      "display_name": "Giật ga + Đánh lái (<10 km/h)",
+      "group": "G10",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 5,
+      "name": "NORMAL_STEERING",
+      "display_name": "Bình thường + Đánh lái (<10 km/h)",
+      "group": "G10",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 6,
+      "name": "NORMAL",
+      "display_name": "Đi bình thường (<10 km/h)",
+      "group": "G10",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 7,
+      "name": "NORMAL_20",
+      "display_name": "Đi bình thường (~20 km/h)",
+      "group": "G20",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 8,
+      "name": "BRAKE_20",
+      "display_name": "Thắng gấp (~20 km/h)",
+      "group": "G20",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 9,
+      "name": "ACCEL_20",
+      "display_name": "Giật ga (~20 km/h)",
+      "group": "G20",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 10,
+      "name": "TURN_20",
+      "display_name": "Rẽ bình thường (~20 km/h)",
+      "group": "G20",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 11,
+      "name": "ACCEL_TURN_20",
+      "display_name": "Giật ga + Đánh lái (~20 km/h)",
+      "group": "G20",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 12,
+      "name": "BRAKE_TURN_20",
+      "display_name": "Thắng gấp + Đánh lái (~20 km/h)",
+      "group": "G20",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 13,
+      "name": "NORMAL_40",
+      "display_name": "Đi bình thường (~40 km/h)",
+      "group": "G40",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 14,
+      "name": "BRAKE_40",
+      "display_name": "Thắng gấp (~40 km/h)",
+      "group": "G40",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 15,
+      "name": "ACCEL_40",
+      "display_name": "Giật ga (~40 km/h)",
+      "group": "G40",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 16,
+      "name": "TURN_40",
+      "display_name": "Rẽ bình thường (~40 km/h)",
+      "group": "G40",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 17,
+      "name": "ACCEL_TURN_40",
+      "display_name": "Giật ga + Đánh lái (~40 km/h)",
+      "group": "G40",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 18,
+      "name": "BRAKE_TURN_40",
+      "display_name": "Thắng gấp + Đánh lái (~40 km/h)",
+      "group": "G40",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 19,
+      "name": "NORMAL_80",
+      "display_name": "Đi bình thường (~80 km/h)",
+      "group": "G80",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 20,
+      "name": "BRAKE_80",
+      "display_name": "Thắng gấp (~80 km/h)",
+      "group": "G80",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 21,
+      "name": "ACCEL_80",
+      "display_name": "Giật ga (~80 km/h)",
+      "group": "G80",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 22,
+      "name": "TURN_80",
+      "display_name": "Rẽ bình thường (~80 km/h)",
+      "group": "G80",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 23,
+      "name": "ACCEL_TURN_80",
+      "display_name": "Giật ga + Đánh lái (~80 km/h)",
+      "group": "G80",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 24,
+      "name": "BRAKE_TURN_80",
+      "display_name": "Thắng gấp + Đánh lái (~80 km/h)",
+      "group": "G80",
+      "label_source": "HEURISTIC_PRIMARY"
+    },
+    {
+      "id": 25,
+      "name": "MODERATE_DECEL",
+      "display_name": "Giảm tốc vừa phải (chưa xác nhận ngữ nghĩa)",
+      "group": "RESIDUAL_HEURISTIC",
+      "label_source": "RESIDUAL_HEURISTIC"
+    },
+    {
+      "id": 26,
+      "name": "MODERATE_ACCEL",
+      "display_name": "Tăng tốc vừa phải (chưa xác nhận ngữ nghĩa)",
+      "group": "RESIDUAL_HEURISTIC",
+      "label_source": "RESIDUAL_HEURISTIC"
+    },
+    {
+      "id": 27,
+      "name": "STEERING_ANOMALY",
+      "display_name": "Đánh lái ngoài trạng thái bình thường",
+      "group": "RESIDUAL_HEURISTIC",
+      "label_source": "RESIDUAL_HEURISTIC"
+    },
+    {
+      "id": 28,
+      "name": "MODERATE_BRAKE_STEER",
+      "display_name": "Thắng vừa phải + Đánh lái (chưa xác nhận)",
+      "group": "RESIDUAL_HEURISTIC",
+      "label_source": "RESIDUAL_HEURISTIC"
+    },
+    {
+      "id": 29,
+      "name": "MODERATE_ACCEL_STEER",
+      "display_name": "Tăng tốc vừa phải + Đánh lái (chưa xác nhận)",
+      "group": "RESIDUAL_HEURISTIC",
+      "label_source": "RESIDUAL_HEURISTIC"
+    },
+    {
+      "id": 30,
+      "name": "JERK_TRANSIENT",
+      "display_name": "Độ giật (Jerk) chiếm ưu thế - chuyển tiếp ngắn",
+      "group": "RESIDUAL_HEURISTIC",
+      "label_source": "RESIDUAL_HEURISTIC"
+    },
+    {
+      "id": 31,
+      "name": "SPEED_BOUNDARY_TRANSITION",
+      "display_name": "Chuyển tiếp qua vùng ranh giới tốc độ",
+      "group": "RESIDUAL_HEURISTIC",
+      "label_source": "RESIDUAL_HEURISTIC"
+    },
+    {
+      "id": 32,
+      "name": "IMU_GPS_MISMATCH",
+      "display_name": "Bất nhất IMU-GPS (vấn đề chất lượng dữ liệu)",
+      "group": "DATA_QUALITY",
+      "label_source": "DATA_QUALITY"
+    }
+  ],
+  "num_flags": 15,
+  "flag_names": [
+    "SPEED_G10",
+    "SPEED_G20",
+    "SPEED_G40",
+    "SPEED_G80",
+    "NORMAL",
+    "STOP",
+    "BRAKE_HARD",
+    "BRAKE_MODERATE",
+    "ACCEL_HARD",
+    "ACCEL_MODERATE",
+    "STEERING",
+    "STEERING_ANOMALY",
+    "JERK_TRANSIENT",
+    "SPEED_TRANSITION",
+    "DATA_QUALITY_ISSUE"
+  ],
+  "label_to_flags": {
+    "STOP_RED_LIGHT": [
+      "SPEED_G10",
+      "STOP"
+    ],
+    "HARD_BRAKE": [
+      "SPEED_G10",
+      "BRAKE_HARD"
+    ],
+    "HARD_BRAKE_STEERING": [
+      "SPEED_G10",
+      "BRAKE_HARD",
+      "STEERING"
+    ],
+    "SUDDEN_ACCEL": [
+      "SPEED_G10",
+      "ACCEL_HARD"
+    ],
+    "SUDDEN_ACCEL_STEERING": [
+      "SPEED_G10",
+      "ACCEL_HARD",
+      "STEERING"
+    ],
+    "NORMAL_STEERING": [
+      "SPEED_G10",
+      "NORMAL",
+      "STEERING"
+    ],
+    "NORMAL": [
+      "SPEED_G10",
+      "NORMAL"
+    ],
+    "NORMAL_20": [
+      "SPEED_G20",
+      "NORMAL"
+    ],
+    "BRAKE_20": [
+      "SPEED_G20",
+      "BRAKE_HARD"
+    ],
+    "ACCEL_20": [
+      "SPEED_G20",
+      "ACCEL_HARD"
+    ],
+    "TURN_20": [
+      "SPEED_G20",
+      "NORMAL",
+      "STEERING"
+    ],
+    "ACCEL_TURN_20": [
+      "SPEED_G20",
+      "ACCEL_HARD",
+      "STEERING"
+    ],
+    "BRAKE_TURN_20": [
+      "SPEED_G20",
+      "BRAKE_HARD",
+      "STEERING"
+    ],
+    "NORMAL_40": [
+      "SPEED_G40",
+      "NORMAL"
+    ],
+    "BRAKE_40": [
+      "SPEED_G40",
+      "BRAKE_HARD"
+    ],
+    "ACCEL_40": [
+      "SPEED_G40",
+      "ACCEL_HARD"
+    ],
+    "TURN_40": [
+      "SPEED_G40",
+      "NORMAL",
+      "STEERING"
+    ],
+    "ACCEL_TURN_40": [
+      "SPEED_G40",
+      "ACCEL_HARD",
+      "STEERING"
+    ],
+    "BRAKE_TURN_40": [
+      "SPEED_G40",
+      "BRAKE_HARD",
+      "STEERING"
+    ],
+    "NORMAL_80": [
+      "SPEED_G80",
+      "NORMAL"
+    ],
+    "BRAKE_80": [
+      "SPEED_G80",
+      "BRAKE_HARD"
+    ],
+    "ACCEL_80": [
+      "SPEED_G80",
+      "ACCEL_HARD"
+    ],
+    "TURN_80": [
+      "SPEED_G80",
+      "NORMAL",
+      "STEERING"
+    ],
+    "ACCEL_TURN_80": [
+      "SPEED_G80",
+      "ACCEL_HARD",
+      "STEERING"
+    ],
+    "BRAKE_TURN_80": [
+      "SPEED_G80",
+      "BRAKE_HARD",
+      "STEERING"
+    ],
+    "MODERATE_DECEL": [
+      "BRAKE_MODERATE"
+    ],
+    "MODERATE_ACCEL": [
+      "ACCEL_MODERATE"
+    ],
+    "STEERING_ANOMALY": [
+      "STEERING",
+      "STEERING_ANOMALY"
+    ],
+    "MODERATE_BRAKE_STEER": [
+      "BRAKE_MODERATE",
+      "STEERING"
+    ],
+    "MODERATE_ACCEL_STEER": [
+      "ACCEL_MODERATE",
+      "STEERING"
+    ],
+    "JERK_TRANSIENT": [
+      "JERK_TRANSIENT"
+    ],
+    "SPEED_BOUNDARY_TRANSITION": [
+      "SPEED_TRANSITION"
+    ],
+    "IMU_GPS_MISMATCH": [
+      "DATA_QUALITY_ISSUE"
+    ]
+  },
+  "meta": {
+    "feature_columns": [
+      "speed_kmh",
+      "acc_x",
+      "acc_y",
+      "acc_z",
+      "gyr_x",
+      "gyr_y",
+      "gyr_z",
+      "acc_norm",
+      "jerk",
+      "sin_yaw",
+      "cos_yaw",
+      "sin_pitch",
+      "cos_pitch",
+      "sin_roll",
+      "cos_roll"
+    ],
+    "timesteps": 200,
+    "window_sec": 2.0,
+    "fs": 100.0,
+    "tflite_model": "driversafe_event_classifier_int8.tflite",
+    "model_versions": {
+      "keras_fp32": "driversafe_event_classifier_fp32.keras",
+      "tflite_fp32": "driversafe_event_classifier_fp32.tflite",
+      "tflite_int8": "driversafe_event_classifier_int8.tflite"
+    },
+    "trained_on": "multi_trip",
+    "num_trips": 13,
+    "trip_names": [
+      "01102026_090507",
+      "01102026_095030",
+      "01102026_130708",
+      "01102026_135950",
+      "26092026_142359",
+      "27092026_011306",
+      "27092026_190547",
+      "27092026_201237",
+      "30092026_144320",
+      "30092026_152135",
+      "30092026_205740",
+      "30092026_221146",
+      "30092026_224207"
+    ]
+  }
+}
